@@ -28,7 +28,6 @@
     onPeersChange,
     waitForBoard,
     setPresenceName,
-    hasTurn,
   } from './p2p.js';
   import { peers, localFocusedCard, author } from './store.js';
   import ClipboardJS from 'clipboard';
@@ -294,7 +293,9 @@
           {#if $peers.failures > 0}
             <p class="text-warning" data-name="connect-failed">
               {$_(
-                hasTurn ? 'board.waiting.blocked_turn' : 'board.waiting.blocked'
+                $peers.turn
+                  ? 'board.waiting.blocked_turn'
+                  : 'board.waiting.blocked'
               )}
             </p>
           {/if}

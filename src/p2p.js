@@ -57,21 +57,37 @@ export function forgetBoard(id) {
 
 const sessions = new Map();
 
-// Optional TURN relay for networks where direct WebRTC fails (strict NATs,
-// corporate firewalls). Set at build time, comma-separated URLs, e.g.
-// VITE_TURN_URLS=turn:turn.example.com:3478,turns:turn.example.com:5349
-// The relay only forwards already-encrypted WebRTC traffic.
-const env = import.meta.env;
-const turnConfig = env.VITE_TURN_URLS
-  ? [
-      {
-        urls: env.VITE_TURN_URLS.split(',').map((u) => u.trim()),
-        username: env.VITE_TURN_USERNAME,
-        credential: env.VITE_TURN_CREDENTIAL,
-      },
-    ]
-  : undefined;
-export const hasTurn = !!turnConfig;
+// TURN relay for networks where direct WebRTC fails (strict NATs, corporate
+// firewalls). Short-lived credentials come from a tiny stateless Worker
+// (turn-worker/); the relay only forwards already-encrypted WebRTC traffic.
+// Override the endpoint with VITE_TURN_ENDPOINT ('' disables TURN).
+const TURN_ENDPOINT =
+  import.meta.env.VITE_TURN_ENDPOINT ?? 'https://retro-turn.lunguini.com/';
+let icePromise = null;
+let iceExpires = 0;
+
+function getTurnConfig() {
+  if (!TURN_ENDPOINT) return Promise.resolve(undefined);
+  if (icePromise && Date.now() < iceExpires) return icePromise;
+  iceExpires = Date.now() + 12 * 60 * 60 * 1000; // creds last 24h
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 4000);
+  icePromise = fetch(TURN_ENDPOINT, { signal: ctrl.signal })
+    .then((r) => (r.ok ? r.json() : Promise.reject(new Error(r.status))))
+    .then(({ iceServers }) =>
+      // Trystero adds its own STUN servers; pass only the TURN entries.
+      iceServers.filter((s) =>
+        [].concat(s.urls).some((u) => u.startsWith('turn'))
+      )
+    )
+    .catch((err) => {
+      console.warn('TURN unavailable, using direct connections only', err);
+      iceExpires = 0;
+      return undefined;
+    })
+    .finally(() => clearTimeout(timer));
+  return icePromise;
+}
 
 // Display name shared with peers (presence only; not stored in the board).
 let presenceName = '';
@@ -84,68 +100,88 @@ export function setPresenceName(name) {
 function connect(boardId, ydoc) {
   const listeners = new Set();
   // people: peerId -> display name; failures: peers we saw but couldn't reach
-  const status = { peers: 0, people: {}, failures: 0 };
-  let room;
-  try {
-    room = joinRoom(
-      { appId: APP_ID, identity: 'none', ...(turnConfig && { turnConfig }) },
-      boardId
-    );
-  } catch (err) {
-    console.error('P2P connection failed', err);
-    return { status, listeners, leave() {} };
-  }
-  const sync = room.makeAction('ysync');
-  const update = room.makeAction('yupdate');
-  const hello = room.makeAction('hello');
+  const status = { peers: 0, people: {}, failures: 0, turn: false };
   const notify = () =>
     listeners.forEach((l) => l({ ...status, people: { ...status.people } }));
-  const sendHello = (target) =>
-    hello.send({ name: presenceName }, target ? { target } : undefined);
-  presenceSenders.add(sendHello);
-  hello.onMessage((msg, { peerId }) => {
-    status.people[peerId] = String(msg?.name ?? '').slice(0, 40);
+  let left = false;
+  let teardown = () => {};
+
+  getTurnConfig().then((turnConfig) => {
+    if (left) return;
+    status.turn = !!turnConfig?.length;
     notify();
-  });
-  room.onError?.((err) => {
-    if (err.code === 'peer-connect-failed' || err.code === 'handshake-failed') {
-      status.failures++;
-      notify();
+    let room;
+    try {
+      room = joinRoom(
+        {
+          appId: APP_ID,
+          identity: 'none',
+          ...(status.turn && { turnConfig }),
+        },
+        boardId
+      );
+    } catch (err) {
+      console.error('P2P connection failed', err);
+      return;
     }
-  });
+    const sync = room.makeAction('ysync');
+    const update = room.makeAction('yupdate');
+    const hello = room.makeAction('hello');
+    const sendHello = (target) =>
+      hello.send({ name: presenceName }, target ? { target } : undefined);
+    presenceSenders.add(sendHello);
+    hello.onMessage((msg, { peerId }) => {
+      status.people[peerId] = String(msg?.name ?? '').slice(0, 40);
+      notify();
+    });
+    room.onError?.((err) => {
+      if (
+        err.code === 'peer-connect-failed' ||
+        err.code === 'handshake-failed'
+      ) {
+        status.failures++;
+        notify();
+      }
+    });
 
-  room.onPeerJoin(({ peerId }) => {
-    status.peers = Object.keys(room.getPeers()).length;
-    status.people[peerId] ??= '';
-    status.failures = 0;
-    notify();
-    sendHello(peerId);
-    // Ask the new peer for what we're missing; they do the same.
-    sync.send(Y.encodeStateVector(ydoc), { target: peerId });
-  });
-  room.onPeerLeave(({ peerId }) => {
-    delete status.people[peerId];
-    status.peers = Object.keys(room.getPeers()).length;
-    notify();
-  });
-  sync.onMessage((stateVector, { peerId }) => {
-    const diff = Y.encodeStateAsUpdate(ydoc, new Uint8Array(stateVector));
-    update.send(diff, { target: peerId });
-  });
-  update.onMessage((u) => Y.applyUpdate(ydoc, new Uint8Array(u), 'remote'));
+    room.onPeerJoin(({ peerId }) => {
+      status.peers = Object.keys(room.getPeers()).length;
+      status.people[peerId] ??= '';
+      status.failures = 0;
+      notify();
+      sendHello(peerId);
+      // Ask the new peer for what we're missing; they do the same.
+      sync.send(Y.encodeStateVector(ydoc), { target: peerId });
+    });
+    room.onPeerLeave(({ peerId }) => {
+      delete status.people[peerId];
+      status.peers = Object.keys(room.getPeers()).length;
+      notify();
+    });
+    sync.onMessage((stateVector, { peerId }) => {
+      const diff = Y.encodeStateAsUpdate(ydoc, new Uint8Array(stateVector));
+      update.send(diff, { target: peerId });
+    });
+    update.onMessage((u) => Y.applyUpdate(ydoc, new Uint8Array(u), 'remote'));
 
-  const onUpdate = (u, origin) => {
-    if (origin !== 'remote' && origin !== 'idb') update.send(u);
-  };
-  ydoc.on('update', onUpdate);
+    const onUpdate = (u, origin) => {
+      if (origin !== 'remote' && origin !== 'idb') update.send(u);
+    };
+    ydoc.on('update', onUpdate);
+
+    teardown = () => {
+      ydoc.off('update', onUpdate);
+      presenceSenders.delete(sendHello);
+      room.leave();
+    };
+  });
 
   return {
     status,
     listeners,
     leave() {
-      ydoc.off('update', onUpdate);
-      presenceSenders.delete(sendHello);
-      room.leave();
+      left = true;
+      teardown();
     },
   };
 }

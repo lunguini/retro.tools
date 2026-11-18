@@ -32,10 +32,6 @@ jobs:
       - run: npm run build
         env:
           BASE_PATH: /  # custom domain (public/CNAME)
-          # Optional TURN relay (repo secrets); leave unset for STUN-only
-          VITE_TURN_URLS: ${{ secrets.TURN_URLS }}
-          VITE_TURN_USERNAME: ${{ secrets.TURN_USERNAME }}
-          VITE_TURN_CREDENTIAL: ${{ secrets.TURN_CREDENTIAL }}
       # SPA fallback: GitHub Pages serves 404.html for unknown paths like /<board-id>
       - run: cp dist/index.html dist/404.html
       - uses: actions/configure-pages@v5
