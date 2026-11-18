@@ -1,10 +1,8 @@
 <script>
-  import clsx from 'clsx';
+  import { _ } from 'svelte-i18n';
 
-  import { board, colorMode, colors } from '../store.js';
+  import { board, colors } from '../store.js';
   import { Icons } from '../data.js';
-
-  import Button from './Button.svelte';
 
   let {
     votes = 0,
@@ -15,43 +13,64 @@
   } = $props();
 </script>
 
-<div class="d-flex">
-  {#if $board.voting_open}
-    <Button
-      data-name="vote-button"
-      class="flex-grow-0 flex-shrink-0 p-1 bg-{$colorMode}-accent"
-      {disabled}
-      onclick={() => ontoggleVote?.()}
-    >
-      <div class="icon" style="color: {$colors[color]}" class:unvoted={!voted}>
-        <Icons.arrowUp class="align-top" size="1.7x" />
-      </div>
-    </Button>
-  {/if}
-  <span
-    data-name="vote-count"
-    style="color: {$colors[color]}"
-    class={clsx('votes font-weight-bold h3 mb-0 mt-0 text-center', {
-      'me-1': $board.voting_open,
-      'px-2': !$board.voting_open,
-    })}
+{#if $board.voting_open}
+  <button
+    type="button"
+    data-name="vote-button"
+    class="vote"
+    class:voted
+    {disabled}
+    aria-pressed={voted}
+    aria-label={$_('card.vote')}
+    title={disabled ? $_('error.vote_limit_reached') : $_('card.vote')}
+    style="--vote: {$colors[color] ?? 'var(--rt-accent)'}"
+    onclick={() => ontoggleVote?.()}
   >
-    {votes}
+    <Icons.arrowUp size="14" strokeWidth="3" />
+    <span data-name="vote-count">{votes}</span>
+  </button>
+{:else}
+  <span
+    class="vote static"
+    style="--vote: {$colors[color] ?? 'var(--rt-accent)'}"
+  >
+    <span data-name="vote-count">{votes}</span>
   </span>
-</div>
+{/if}
 
 <style>
-  .votes {
-    text-align: right;
-    min-width: 25px;
+  .vote {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    border: 1px solid var(--rt-line);
+    background: transparent;
+    color: var(--rt-muted);
+    border-radius: 999px;
+    padding: 0.1rem 0.55rem 0.1rem 0.45rem;
+    font-weight: 700;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    font-variant-numeric: tabular-nums;
   }
 
-  .icon {
-    width: 1.5em;
-    height: 1.5em;
+  button.vote:hover:not(:disabled) {
+    border-color: var(--vote);
+    color: var(--vote);
   }
 
-  .unvoted {
-    color: #aaa !important;
+  .vote.voted {
+    background: var(--vote);
+    border-color: var(--vote);
+    color: #fff;
+  }
+
+  .vote:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .vote.static {
+    padding: 0.1rem 0.55rem;
   }
 </style>

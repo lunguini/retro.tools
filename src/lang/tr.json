@@ -5,7 +5,7 @@
   "general.donate": "Bağış Yap",
   "general.untitled": "Başlıksız",
   "general.feedback": "Geribildirim Ver",
-  "splash.hero_text": "Basit, Kolay ve Hızlı Retro Toplantıları.",
+  "splash.hero_text": "Ekip retronuzu birlikte, canlı yapın.",
   "splash.board_name": "Pano İsmi",
   "splash.board_name_example": "Sprint 21 Retrospektifi",
   "splash.template": "Şablon",
@@ -124,5 +124,12 @@
   "board.waiting.body": "Panolar yalnızca katılımcıların tarayıcılarında bulunur. Bu panoya sahip biri açtığı anda burada yüklenecek. Bağlantıyı paylaşın veya panoyu açık tutmalarını isteyin.",
   "board.waiting.blocked": "Katılımcılar bulundu ama doğrudan bağlanılamadı. Ağlardan biri (genellikle şirket güvenlik duvarı veya VPN) P2P bağlantıları engelliyor. Telefon hotspot'u gibi başka bir ağ deneyin.",
   "board.waiting.blocked_turn": "Katılımcılar bulundu ama aktarıcı üzerinden de bağlanılamadı. Ağınızı veya VPN'i kontrol edin.",
-  "board.waiting.home": "Ana sayfaya dön"
+  "board.waiting.home": "Ana sayfaya dön",
+  "splash.why": "Neden retro.tools",
+  "card.delete_confirm": "Bu kart silinsin mi?",
+  "card.react": "Tepki ekle",
+  "card.vote": "Bu karta oy ver",
+  "board.column_options": "Sütun rengi ve simgesi",
+  "board.delete_column": "Sütunu sil",
+  "general.toggle_theme": "Açık/koyu temayı değiştir"
 }

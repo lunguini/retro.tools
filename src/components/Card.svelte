@@ -1,13 +1,11 @@
 <script>
-  import { slide } from 'svelte/transition';
   import { Popover } from '@sveltestrap/sveltestrap';
   import { _ } from 'svelte-i18n';
 
   import {
     board,
     cards,
-    colorMode,
-    darkMode,
+    colors,
     password,
     focusedCard,
     localFocusedCard,
@@ -164,11 +162,65 @@
   class:busy={card.busy}
   class:focused
   class:dimmed
-  class="card bg-{$colorMode}"
+  class="rt-card"
+  style="--lane: {$colors[color] ?? 'var(--rt-muted)'}"
   onclick={onCardClick}
 >
-  <div class="d-flex" class:blur={deleteConfirmMode}>
-    <div class="p-1 pt-votes flex-grow-0 bg-{$colorMode}-accent rounded-start">
+  {#if editMode}
+    <Textarea
+      data-name="card-edit-field"
+      autoresize
+      autofocus
+      bind:value={newCardText}
+      onsubmit={submitEdit}
+      oncancel={cancelEdit}
+      onblur={submitEdit}
+    />
+  {:else}
+    <div data-name="card-body">
+      <div
+        data-name="card-content"
+        class="card-text pre-wrap"
+        class:editable={!obscured &&
+          (card.owner || $board.owner || $board.open_permission)}
+        role="button"
+        tabindex="0"
+        onkeypress={null}
+        onclick={obscured ? null : startEdit}
+      >
+        {#if obscured}
+          <div data-name="obscured-placeholder" class="obscured-text"></div>
+          <div class="obscured-text short"></div>
+        {:else}
+          <EncryptedText bind:text={card.text} />
+        {/if}
+      </div>
+    </div>
+  {/if}
+
+  {#if deleteConfirmMode}
+    <div class="card-foot confirm" data-name="delete-confirm">
+      <span class="text-secondary small">{$_('card.delete_confirm')}</span>
+      <span class="ms-auto d-flex gap-1">
+        <Button
+          data-name="cancel-button"
+          class="btn-sm btn-outline-secondary"
+          onclick={() => (deleteConfirmMode = false)}
+        >
+          {$_('card.cancel')}
+        </Button>
+        <Button
+          data-name="confirm-button"
+          color="danger"
+          class="btn-sm"
+          onclick={doDelete}
+        >
+          {$_('card.delete')}
+        </Button>
+      </span>
+    </div>
+  {:else}
+    <div class="card-foot">
       <Votes
         ontoggleVote={toggleVote}
         bind:votes={card.votes}
@@ -176,201 +228,202 @@
         disabled={$voteLimitReached && !card.voted}
         bind:color
       />
-    </div>
-    <div class="p-1 pt-0 w-100 flex-grow-1">
-      {#if editMode}
-        <Textarea
-          data-name="card-edit-field"
-          autoresize
-          autofocus
-          bind:value={newCardText}
-          onsubmit={submitEdit}
-          oncancel={cancelEdit}
-          onblur={submitEdit}
-        />
-      {:else}
-        <div data-name="card-body">
-          <div class="m-0 w-100">
-            <div class="d-flex flex-wrap">
-              <div class="flex-grow-1">
-                {#if obscured}
-                  <div class="text-secondary fw-bold">
-                    {$_('card.anonymous')}
-                  </div>
-                {:else if card.author.length > 0}
-                  <div class:text-primary={!$darkMode} class="fw-bold pb-1">
-                    <EncryptedText bind:text={card.author} />
-                  </div>
-                {:else}
-                  <div class="text-secondary fw-bold">
-                    {$_('card.anonymous')}
-                  </div>
-                {/if}
-              </div>
-              <div
-                id={`react-drawer-button-${cardSlug}`}
-                data-name="react-drawer-button"
-                class="d-flex flex-wrap justify-content-end pointer"
-              >
-                {#if Object.entries(card.reactions).filter(([, v]) => v > 0).length > 0}
-                  {#each Object.entries(card.reactions)
-                    .sort( ([ak, av], [bk, bv]) => (av === bv ? bk.localeCompare(ak) : bv - av) )
-                    .filter(([, v]) => v > 0) as [emoji, count] (emoji)}
-                    <span
-                      class="badge m-1"
-                      class:text-body={$darkMode}
-                      class:text-bg-light={!$darkMode && card.reacted !== emoji}
-                      class:text-bg-primary={!$darkMode &&
-                        card.reacted === emoji}
-                      class:bg-dark-accent={$darkMode && card.reacted === emoji}
-                      class:text-bg-dark={$darkMode && card.reacted !== emoji}
-                      in:slide>{emoji}&nbsp;&nbsp;{count}</span
-                    >
-                  {/each}
-                {:else}
-                  <div class="badge m-1">
-                    <span class="grayscale-{$colorMode}">🙂</span>
-                  </div>
-                {/if}
-              </div>
-              <Popover
-                target={`react-drawer-button-${cardSlug}`}
-                bind:isOpen={reactDrawOpen}
-              >
-                <div
-                  use:clickOutside
-                  onclickOutside={() => (reactDrawOpen = !reactDrawOpen)}
-                >
-                  <ReactDrawer onselected={doReact} current={card.reacted} />
-                </div>
-              </Popover>
-            </div>
-            <div class="border-top border-secondary author-border"></div>
-          </div>
-          <div
-            data-name="card-content"
-            class="p-1 w-100 pre-wrap"
-            role="button"
-            tabindex="0"
-            onkeypress={null}
-            onclick={obscured ? null : startEdit}
-          >
-            {#if obscured}
-              <div data-name="obscured-placeholder" class="obscured-text"></div>
-            {:else}
-              <EncryptedText bind:text={card.text} />
-            {/if}
-          </div>
-        </div>
-      {/if}
-    </div>
-    <div class="p-1 pt-3 bg-{$colorMode}-accent rounded-end">
-      {#if card.owner || $board.owner || $board.open_permission}
-        <Button
-          data-name="delete-button"
-          textColor={!$darkMode ? 'danger' : 'body'}
-          class="bg-{$colorMode}-accent"
-          onclick={() => (deleteConfirmMode = true)}
+      <span class="author text-truncate">
+        {#if obscured || card.author.length === 0}
+          {$_('card.anonymous')}
+        {:else}
+          <EncryptedText bind:text={card.author} />
+        {/if}
+      </span>
+      <span class="ms-auto d-flex align-items-center gap-1">
+        <button
+          type="button"
+          id={`react-drawer-button-${cardSlug}`}
+          data-name="react-drawer-button"
+          class="reactions"
+          class:empty={Object.values(card.reactions).every((v) => !v)}
+          aria-label={$_('card.react')}
         >
-          <div class="icon">
-            <Icons.trash class="align-top" size="1.4x" />
-          </div>
-        </Button>
-      {/if}
-    </div>
-  </div>
-
-  {#if deleteConfirmMode}
-    <div class="position-absolute w-100 h-100 p-3 text-end">
-      <Button
-        data-name="cancel-button"
-        color="secondary"
-        textColor="light"
-        class="btn-sm"
-        onclick={() => (deleteConfirmMode = false)}
+          {#each Object.entries(card.reactions)
+            .sort( ([ak, av], [bk, bv]) => (av === bv ? bk.localeCompare(ak) : bv - av) )
+            .filter(([, v]) => v > 0) as [emoji, count] (emoji)}
+            <span class="reaction" class:mine={card.reacted === emoji}
+              >{emoji}<span class="count">{count}</span></span
+            >
+          {:else}
+            <span class="add-reaction">🙂</span>
+          {/each}
+        </button>
+        {#if card.owner || $board.owner || $board.open_permission}
+          <button
+            type="button"
+            data-name="delete-button"
+            class="icon-btn delete"
+            aria-label={$_('card.delete')}
+            onclick={() => (deleteConfirmMode = true)}
+          >
+            <Icons.trash size="15" />
+          </button>
+        {/if}
+      </span>
+      <Popover
+        target={`react-drawer-button-${cardSlug}`}
+        bind:isOpen={reactDrawOpen}
       >
-        <div class="icon">
-          <Icons.close size="1x" />
+        <div
+          use:clickOutside
+          onclickOutside={() => (reactDrawOpen = !reactDrawOpen)}
+        >
+          <ReactDrawer onselected={doReact} current={card.reacted} />
         </div>
-      </Button>
-
-      <Button
-        data-name="confirm-button"
-        color="danger"
-        textColor="light"
-        class="btn-sm"
-        onclick={doDelete}
-      >
-        <div class="icon">
-          <Icons.check size="1x" />
-        </div>
-      </Button>
+      </Popover>
     </div>
   {/if}
 </div>
 
 <style>
-  .pt-votes {
-    padding-top: 0.85rem !important;
-  }
-
-  .busy {
-    opacity: 0.66;
-  }
-
-  .card {
+  .rt-card {
+    position: relative;
+    background: var(--rt-card);
+    border-radius: 10px;
+    border-left: 3px solid var(--lane);
+    box-shadow: var(--rt-shadow);
+    padding: 0.7rem 0.8rem 0.45rem 0.85rem;
     transition:
       opacity 0.2s,
       transform 0.2s,
       box-shadow 0.2s;
   }
 
+  .card-text {
+    font-size: 1.05rem;
+    line-height: 1.4;
+    color: var(--rt-ink);
+    overflow-wrap: anywhere;
+    outline-offset: 4px;
+  }
+
+  .card-text.editable {
+    cursor: text;
+  }
+
+  .card-foot {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.55rem;
+    min-height: 1.9rem;
+  }
+
+  .author {
+    font-size: 0.82rem;
+    color: var(--rt-muted);
+    font-weight: 600;
+    min-width: 0;
+  }
+
+  .reactions {
+    display: flex;
+    gap: 0.25rem;
+    border: 0;
+    background: none;
+    padding: 0.1rem 0.2rem;
+    border-radius: 999px;
+    cursor: pointer;
+    color: inherit;
+  }
+
+  .reaction {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+    padding: 0.05rem 0.45rem;
+    border-radius: 999px;
+    background: var(--rt-lane);
+  }
+
+  .reaction.mine {
+    background: rgba(var(--rt-accent-rgb), 0.18);
+    box-shadow: inset 0 0 0 1px rgba(var(--rt-accent-rgb), 0.5);
+  }
+
+  .count {
+    font-weight: 700;
+    font-size: 0.78rem;
+  }
+
+  .add-reaction {
+    filter: grayscale(1);
+    opacity: 0.45;
+  }
+
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.8rem;
+    height: 1.8rem;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--rt-muted);
+  }
+
+  .icon-btn.delete:hover {
+    color: #c43d4b;
+    background: rgba(196, 61, 75, 0.1);
+  }
+
+  /* Secondary controls appear on hover/focus; always on touch screens. */
+  @media (hover: hover) {
+    .reactions.empty,
+    .icon-btn.delete {
+      opacity: 0;
+    }
+    .rt-card:hover .reactions.empty,
+    .rt-card:hover .icon-btn.delete,
+    .rt-card:focus-within .reactions.empty,
+    .rt-card:focus-within .icon-btn.delete {
+      opacity: 1;
+    }
+  }
+
+  .confirm {
+    border-top: 1px solid var(--rt-line);
+    padding-top: 0.45rem;
+  }
+
+  .busy {
+    opacity: 0.66;
+  }
+
   .focused {
-    outline: 3px solid var(--bs-primary);
-    outline-offset: 2px;
-    box-shadow: 0 0.5rem 1.5rem rgba(var(--bs-primary-rgb), 0.35);
-    transform: scale(1.03);
+    box-shadow:
+      0 0 0 3px var(--rt-accent),
+      var(--rt-lift);
+    transform: translateY(-2px) scale(1.02);
     z-index: 2;
   }
 
   .dimmed {
-    opacity: 0.5;
-  }
-
-  .blur {
-    opacity: 0.3;
+    opacity: 0.45;
   }
 
   .pre-wrap {
     white-space: pre-wrap;
   }
 
-  .icon {
-    width: 1.5em;
-    height: 1.5em;
-  }
-
-  .author-border {
-    opacity: 0.2;
-  }
-
-  .grayscale-dark {
-    filter: grayscale(100%) brightness(0.5);
-  }
-
-  .grayscale-light {
-    filter: grayscale(100%);
-  }
-
-  .pointer {
-    cursor: pointer;
-  }
-
   .obscured-text {
     width: 100%;
-    height: 1.5em;
-    border-radius: 3px;
+    height: 0.9em;
+    margin: 0.25em 0;
+    border-radius: 4px;
     background: currentColor;
-    opacity: 0.15;
+    opacity: 0.12;
+  }
+
+  .obscured-text.short {
+    width: 60%;
   }
 </style>

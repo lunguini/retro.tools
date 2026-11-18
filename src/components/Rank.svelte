@@ -10,7 +10,6 @@
     cards,
     colorMode,
     colors,
-    darkMode,
     focusedRank,
     password,
     ranks,
@@ -129,154 +128,151 @@
 <div
   data-name="rank"
   data-options-open={$activeRankOptions === rank.id}
-  class="rank flex-grow-0 flex-shrink-0 px-3 {columnWidth}"
+  class="rank flex-grow-0 flex-shrink-0 px-2 {columnWidth}"
   class:busy={rank.busy}
+  style="--lane: {$colors[rank.data.color]}"
 >
-  <div
-    style="position: relative; display: flex; flex-direction: column;"
-    data-name="rank-header"
-  >
+  <div class="lane">
     <div
-      class="d-flex pt-2 mb-2"
-      style="color: {$colors[rank.data.color]}"
-      class:blur={deleteConfirmMode}
+      style="position: relative; display: flex; flex-direction: column;"
+      data-name="rank-header"
     >
-      <div class="d-flex flex-column justify-content-center flex-shrink-0">
-        <div
-          class="icon px-2"
-          role="button"
-          data-name="rank-options-button"
-          tabindex="0"
-          onkeypress={null}
-          onclick={toggleOptions}
-        >
-          <SvelteComponent />
-        </div>
-      </div>
-      <div class="d-flex flex-grow-1 align-items-center min-w-0">
-        {#if renaming}
-          <Input
-            data-name="rank-name-input"
-            autofocus
-            bind:value={newName}
-            onsubmit={submitRename}
-            oncancel={() => (renaming = false)}
-            onblur={submitRename}
-            class="py-0 fw-bold"
-          />
-        {:else}
-          <h5
-            data-name="rank-name"
-            class="m-0 fw-bold text-uppercase text-truncate rank-name"
-            class:editable={canManage}
-            title={canManage ? $_('board.rename_column') : displayName}
-            role={canManage ? 'button' : undefined}
-            tabindex={canManage ? 0 : undefined}
-            onclick={startRename}
-            onkeydown={(e) => e.key === 'Enter' && startRename()}
+      <div class="lane-head" class:blur={deleteConfirmMode}>
+        <div class="d-flex flex-column justify-content-center flex-shrink-0">
+          <div
+            class="icon lane-icon"
+            class:clickable={canManage}
+            title={canManage ? $_('board.column_options') : undefined}
+            role="button"
+            data-name="rank-options-button"
+            tabindex="0"
+            onkeypress={null}
+            onclick={toggleOptions}
           >
-            {displayName}
-          </h5>
+            <SvelteComponent />
+          </div>
+        </div>
+        <div class="d-flex flex-grow-1 align-items-center min-w-0">
+          {#if renaming}
+            <Input
+              data-name="rank-name-input"
+              autofocus
+              bind:value={newName}
+              onsubmit={submitRename}
+              oncancel={() => (renaming = false)}
+              onblur={submitRename}
+              class="py-0 fw-bold"
+            />
+          {:else}
+            <h5
+              data-name="rank-name"
+              class="m-0 text-truncate rank-name"
+              class:editable={canManage}
+              title={canManage ? $_('board.rename_column') : displayName}
+              role={canManage ? 'button' : undefined}
+              tabindex={canManage ? 0 : undefined}
+              onclick={startRename}
+              onkeydown={(e) => e.key === 'Enter' && startRename()}
+            >
+              {displayName}
+            </h5>
+            <span class="lane-count" data-name="rank-card-count"
+              >{sortedFilteredCards.length}</span
+            >
+          {/if}
+        </div>
+        {#if $board.owner || $board.open_permission}
+          <button
+            type="button"
+            data-name="delete-button"
+            class="lane-delete"
+            aria-label={$_('board.delete_column')}
+            title={$_('board.delete_column')}
+            onclick={() => (deleteConfirmMode = true)}
+          >
+            <Icons.trash size="15" />
+          </button>
         {/if}
       </div>
-      {#if $board.owner || $board.open_permission}
-        <Button
-          data-name="delete-button"
-          textColor={!$darkMode ? 'danger' : 'body'}
-          class="bg-{$colorMode}-accent border ms-1"
-          onclick={() => (deleteConfirmMode = true)}
+      <div class="d-flex mb-3" class:blur={deleteConfirmMode}>
+        <div class="d-flex input-group flex-nowrap">
+          <Textarea
+            autoresize
+            data-name="card-text-input"
+            onsubmit={newCard}
+            placeholder={$_('board.add_card')}
+            bind:value={newCardText}
+            onfocus={() => ($focusedRank = rank.id)}
+            minWidth="5em"
+            class="flex-grow-1"
+          />
+          <Button
+            color={$colorMode}
+            disabled={newCardText.length == 0}
+            class="d-lg-none ms-1"
+            onclick={newCard}
+          >
+            <div class="icon">
+              <Icons.enter size="100%" />
+            </div>
+          </Button>
+        </div>
+      </div>
+
+      {#if deleteConfirmMode}
+        <div
+          class="d-flex justify-content-end position-absolute w-100 h-100 p-2 text-end"
         >
-          <div class="icon">
-            <Icons.trash class="align-top" size="1.4x" />
-          </div>
-        </Button>
+          <Button
+            data-name="cancel-button"
+            color="secondary"
+            textColor="light"
+            class="btn-sm m-1"
+            onclick={() => (deleteConfirmMode = false)}
+          >
+            <div class="icon">
+              <Icons.close size="1x" />
+            </div>
+          </Button>
+
+          <Button
+            data-name="confirm-button"
+            color="danger"
+            textColor="light"
+            class="btn-sm m-1"
+            onclick={doDelete}
+          >
+            <div class="icon">
+              <Icons.check size="1x" />
+            </div>
+          </Button>
+        </div>
       {/if}
     </div>
-    <div class="d-flex mb-2" class:blur={deleteConfirmMode}>
-      <div class="d-flex input-group flex-nowrap">
-        <Textarea
-          autoresize
-          data-name="card-text-input"
-          onsubmit={newCard}
-          placeholder={$_('board.add_card')}
-          bind:value={newCardText}
-          onfocus={() => ($focusedRank = rank.id)}
-          minWidth="5em"
-          class="flex-grow-1"
-        />
-        <Button
-          color={$colorMode}
-          disabled={newCardText.length == 0}
-          class="d-lg-none ms-1"
-          onclick={newCard}
-        >
-          <div class="icon">
-            <Icons.enter size="100%" />
-          </div>
-        </Button>
-      </div>
-    </div>
-
-    {#if deleteConfirmMode}
-      <div
-        class="d-flex justify-content-end position-absolute w-100 h-100 p-2 text-end"
-      >
-        <Button
-          data-name="cancel-button"
-          color="secondary"
-          textColor="light"
-          class="btn-sm m-1"
-          onclick={() => (deleteConfirmMode = false)}
-        >
-          <div class="icon">
-            <Icons.close size="1x" />
-          </div>
-        </Button>
-
-        <Button
-          data-name="confirm-button"
-          color="danger"
-          textColor="light"
-          class="btn-sm m-1"
-          onclick={doDelete}
-        >
-          <div class="icon">
-            <Icons.check size="1x" />
-          </div>
-        </Button>
+    {#if $activeRankOptions == rank.id}
+      <div class="p-1" in:slide out:slide>
+        <RankOptions {onerror} class="w-100" {rank} />
       </div>
     {/if}
-  </div>
-  {#if $activeRankOptions == rank.id}
-    <div class="p-1" in:slide out:slide>
-      <RankOptions {onerror} class="w-100" {rank} />
+    <div class="h-100" bind:this={dropTarget} data-rank-id={rank.id}>
+      {#each sortedFilteredCards as card (card.id)}
+        <div
+          data-card-id={card.id}
+          animate:flip={{ duration: 200 }}
+          class="pb-2"
+          data-drag={!(card.owner || $board.owner || $board.open_permission)
+            ? 'false'
+            : 'true'}
+        >
+          <Card {card} {onerror} color={rank.data.color} />
+        </div>
+      {/each}
+      {#if !sortedFilteredCards || sortedFilteredCards.length === 0}
+        <div class="lane-empty" data-drag="false">
+          <small>{$_('board.no_cards')}</small>
+        </div>
+      {/if}
     </div>
-  {/if}
-  <div
-    class="border-bottom mb-2"
-    style="color: {$colors[rank.data.color]}"
-  ></div>
-  <div class="h-100" bind:this={dropTarget} data-rank-id={rank.id}>
-    {#each sortedFilteredCards as card (card.id)}
-      <div
-        data-card-id={card.id}
-        animate:flip={{ duration: 200 }}
-        class="py-1"
-        data-drag={!(card.owner || $board.owner || $board.open_permission)
-          ? 'false'
-          : 'true'}
-      >
-        <Card {card} {onerror} color={rank.data.color} />
-      </div>
-    {/each}
-    {#if !sortedFilteredCards || sortedFilteredCards.length === 0}
-      <div
-        class="text-secondary text-center mt-5 text-center float-right w-100"
-        data-drag="false"
-      >
-        <small>{$_('board.no_cards')}</small>
-      </div>
-    {/if}
   </div>
 </div>
 
@@ -304,5 +300,84 @@
 
   .min-w-0 {
     min-width: 0;
+  }
+  .lane {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: color-mix(in srgb, var(--lane) 5%, var(--rt-lane));
+    border-top: 4px solid var(--lane);
+    border-radius: 12px;
+    padding: 0.75rem 0.75rem 0.5rem;
+  }
+
+  .lane-head {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.6rem;
+    min-height: 2rem;
+  }
+
+  .lane-icon {
+    color: var(--lane);
+    display: flex;
+    align-items: center;
+  }
+
+  .lane-icon.clickable {
+    cursor: pointer;
+  }
+
+  .rank-name {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--rt-ink);
+    letter-spacing: 0;
+  }
+
+  .lane-count {
+    margin-left: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--rt-muted);
+    background: var(--rt-card);
+    border-radius: 999px;
+    padding: 0 0.5rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .lane-delete {
+    border: 0;
+    background: none;
+    color: var(--rt-muted);
+    border-radius: 6px;
+    width: 1.8rem;
+    height: 1.8rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.25rem;
+  }
+
+  .lane-delete:hover {
+    color: #c43d4b;
+    background: rgba(196, 61, 75, 0.1);
+  }
+
+  @media (hover: hover) {
+    .lane-delete {
+      opacity: 0;
+    }
+    .lane-head:hover .lane-delete,
+    .lane-head:focus-within .lane-delete {
+      opacity: 1;
+    }
+  }
+
+  .lane-empty {
+    text-align: center;
+    color: var(--rt-muted);
+    padding: 1.5rem 0;
   }
 </style>

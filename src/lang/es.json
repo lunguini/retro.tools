@@ -92,7 +92,7 @@
   "splash.import_template": "Importar plantilla",
   "board.template.custom.name": "Personalizado (importado)",
   "error.invalid_template": "Archivo de plantilla no válido",
-  "splash.hero_text": "Sencillo. Retros.",
+  "splash.hero_text": "Haz la retro de tu equipo juntos, en directo.",
   "splash.features.anonymous.title": "Sin servidores",
   "splash.features.anonymous.body_1": "No hay backend: nada se guarda salvo en los navegadores de quienes participan. Eliminar un tablero borra tu copia.",
   "splash.features.anonymous.code_link": "Nuestro código",
@@ -124,5 +124,12 @@
   "board.waiting.body": "Los tableros solo viven en los navegadores de los participantes. En cuanto alguien que lo tenga lo abra, se cargará aquí. Comparte el enlace o pide que mantengan el tablero abierto.",
   "board.waiting.blocked": "Se encontraron participantes, pero no hubo conexión directa. Una de las redes (a menudo un firewall corporativo o VPN) bloquea las conexiones P2P. Prueba otra red, como el punto de acceso del móvil.",
   "board.waiting.blocked_turn": "Se encontraron participantes, pero no hubo conexión ni siquiera mediante el relé. Revisa tu red o VPN.",
-  "board.waiting.home": "Volver al inicio"
+  "board.waiting.home": "Volver al inicio",
+  "splash.why": "Por qué retro.tools",
+  "card.delete_confirm": "¿Eliminar esta tarjeta?",
+  "card.react": "Añadir reacción",
+  "card.vote": "Votar esta tarjeta",
+  "board.column_options": "Color e icono de la columna",
+  "board.delete_column": "Eliminar columna",
+  "general.toggle_theme": "Cambiar tema claro/oscuro"
 }

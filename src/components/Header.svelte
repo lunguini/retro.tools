@@ -14,7 +14,6 @@
     votesUsed,
   } from '../store.js';
   import { decrypt, encrypt, checkBoardPassword } from '../encryption.js';
-  import Button from './Button.svelte';
   import { Icons } from '../data';
   import Input from './Input.svelte';
 
@@ -22,6 +21,20 @@
     `${$author || $_('card.anonymous')} (${$_('board.you')})`,
     ...Object.values($peers.people).map((n) => n || $_('card.anonymous')),
   ]);
+
+  function initials(name) {
+    const parts = name
+      .replace(/\(.*\)/, '')
+      .trim()
+      .split(/\s+/);
+    return ((parts[0]?.[0] ?? '?') + (parts[1]?.[0] ?? '')).toUpperCase();
+  }
+
+  function hue(name) {
+    let h = 0;
+    for (const c of name) h = (h * 31 + c.charCodeAt(0)) % 360;
+    return h;
+  }
 
   let editMode = $state(false);
   let newBoardName = $state('');
@@ -52,23 +65,20 @@
   }
 </script>
 
-<div class="on-top">
-  <div class="d-flex justify-content-between flex-wrap">
-    <div class="d-flex flex-column justify-content-center">
-      <a
-        data-name="home-link"
-        href={import.meta.env.BASE_URL}
-        class="text-uppercase fw-bold ps-2 m-0 home-link h3 text-decoration-none"
-        class:text-primary={!$darkMode}
-        class:text-secondary={$darkMode}
-      >
-        retro.tools
-      </a>
-    </div>
-    <div class="flex-grow-1"></div>
+<header class="on-top rt-header">
+  <div class="brand-row">
+    <a
+      data-name="home-link"
+      href={import.meta.env.BASE_URL}
+      class="wordmark text-decoration-none"
+    >
+      retro.tools
+    </a>
+    <span class="sep" aria-hidden="true">/</span>
     <div
       data-name="board-title"
-      class="text-center d-none m-0 d-lg-block h3 w-50 text-body"
+      class="board-title text-truncate"
+      class:editable={$board.owner || $board.open_permission}
       role="button"
       tabindex="0"
       onkeypress={null}
@@ -82,128 +92,244 @@
           onsubmit={submitEdit}
           oncancel={cancelEdit}
           onblur={submitEdit}
-          class="p-0 text-center big-text border-0"
+          class="py-0 border-0 title-input"
         />
       {:else}
         <EncryptedText bind:text={$board.name} />
       {/if}
     </div>
-    <div class="d-flex flex-grow-1 mb-1 me-1 justify-content-end">
-      <Button
-        id="darkLightToggle"
-        color={$colorMode}
-        class="me-1"
-        onclick={() => {
-          $darkMode = !$darkMode;
-          window.localStorage.setItem('darkModePreference', $colorMode);
-        }}
-      >
-        <div class="icon">
-          {#if $darkMode}
-            <Icons.sunrise class="align-top" size="100%" />
-          {:else}
-            <Icons.sunset class="align-top" size="100%" />
-          {/if}
-        </div>
-      </Button>
-      <label
-        class="d-flex align-items-center me-2 mb-0 author-field"
-        title={$_('board.your_name_hint')}
-      >
-        <span class="me-1 small text-secondary text-nowrap"
-          >{$_('board.your_name')}</span
-        >
-        <input
-          data-name="card-author-input"
-          class="form-control form-control-sm"
-          placeholder={$_('card.anonymous')}
-          bind:value={$author}
-          maxlength="40"
-        />
-      </label>
-      {#if $board.max_votes > 0}
-        <span
-          data-name="votes-remaining"
-          class="badge align-self-center me-2"
-          class:text-bg-primary={$votesUsed < $board.max_votes}
-          class:text-bg-secondary={$votesUsed >= $board.max_votes}
-          title={$_('board.votes_remaining_hint')}
-        >
-          {$_('board.votes_remaining', {
-            values: {
-              remaining: Math.max(0, $board.max_votes - $votesUsed),
-              max: $board.max_votes,
-            },
-          })}
-        </span>
-      {/if}
-      <span
-        data-name="peer-count"
-        class="badge align-self-center me-2 text-bg-{$peers.peers > 0
-          ? 'success'
-          : $peers.failures > 0
-            ? 'warning'
-            : 'secondary'}"
-        title={$peers.failures > 0 && $peers.peers === 0
-          ? $_('board.waiting.blocked')
-          : onlineNames.join('\n') || $_('board.peers_hint')}
-      >
-        {#if $peers.peers === 0}
-          {$_('board.peers', { values: { count: 0 } })}
-        {:else}
-          {$_('board.online', { values: { count: $peers.peers + 1 } })}
-          <span class="d-none d-xl-inline fw-normal"
-            >· {onlineNames.slice(0, 3).join(', ')}{onlineNames.length > 3
-              ? ` +${onlineNames.length - 3}`
-              : ''}</span
-          >
-        {/if}
+  </div>
+
+  <div class="tools">
+    <div
+      data-name="peer-count"
+      class="people"
+      class:warn={$peers.failures > 0 && $peers.peers === 0}
+      title={$peers.failures > 0 && $peers.peers === 0
+        ? $_('board.waiting.blocked')
+        : onlineNames.join('\n')}
+    >
+      <span class="avatars" aria-hidden="true">
+        {#each onlineNames.slice(0, 4) as name, i (i)}
+          <span class="avatar" style="--h: {hue(name)}">{initials(name)}</span>
+        {/each}
       </span>
-      <LocaleSelect class="me-1 h-100" />
-      <Menu />
+      <span class="people-label">
+        {$peers.peers === 0
+          ? $_('board.peers', { values: { count: 0 } })
+          : $_('board.online', { values: { count: $peers.peers + 1 } })}
+      </span>
     </div>
-  </div>
-  <hr class="my-0 d-lg-none" />
-  <div
-    data-name="board-title"
-    class="text-secondary d-lg-none h3 pt-1 text-center text-body"
-    role="button"
-    tabindex="0"
-    onkeypress={null}
-    onclick={startEdit}
-  >
-    {#if editMode}
-      <Input
-        data-name="board-title-edit-field"
-        autofocus
-        bind:value={newBoardName}
-        onsubmit={submitEdit}
-        oncancel={cancelEdit}
-        onblur={submitEdit}
-        class="p-0 text-center border-0"
-      />
-    {:else}
-      <EncryptedText bind:text={$board.name} />
+
+    {#if $board.max_votes > 0}
+      <span
+        data-name="votes-remaining"
+        class="votes-left"
+        class:out={$votesUsed >= $board.max_votes}
+        title={$_('board.votes_remaining_hint')}
+      >
+        {$_('board.votes_remaining', {
+          values: {
+            remaining: Math.max(0, $board.max_votes - $votesUsed),
+            max: $board.max_votes,
+          },
+        })}
+      </span>
     {/if}
+
+    <label class="name-field" title={$_('board.your_name_hint')}>
+      <span class="name-label">{$_('board.your_name')}</span>
+      <input
+        data-name="card-author-input"
+        class="form-control form-control-sm"
+        placeholder={$_('card.anonymous')}
+        bind:value={$author}
+        maxlength="40"
+      />
+    </label>
+
+    <button
+      type="button"
+      id="darkLightToggle"
+      class="tool-btn"
+      aria-label={$_('general.toggle_theme')}
+      title={$_('general.toggle_theme')}
+      onclick={() => {
+        $darkMode = !$darkMode;
+        window.localStorage.setItem('darkModePreference', $colorMode);
+      }}
+    >
+      {#if $darkMode}
+        <Icons.sunrise size="18" />
+      {:else}
+        <Icons.sunset size="18" />
+      {/if}
+    </button>
+    <LocaleSelect class="h-100" />
+    <Menu />
   </div>
-  <hr class="my-0 mx-2" />
-</div>
+</header>
 
 <style>
-  .icon {
-    width: 1.5em;
-    height: 1.5em;
-    filter: brightness(0.6);
-  }
-
   .on-top {
     z-index: 1040;
   }
 
-  .home-link {
-    cursor: pointer;
+  .rt-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    flex-wrap: wrap;
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--rt-line);
+    background: var(--rt-wall);
   }
-  .author-field input {
+
+  .brand-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    min-width: 0;
+    flex: 1 1 18rem;
+  }
+
+  .wordmark {
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--rt-muted);
+    white-space: nowrap;
+  }
+
+  .wordmark:hover {
+    color: var(--rt-accent);
+  }
+
+  .sep {
+    color: var(--rt-line);
+    font-size: 1.3rem;
+  }
+
+  .board-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--rt-ink);
+    min-width: 0;
+  }
+
+  .board-title.editable {
+    cursor: text;
+  }
+
+  .board-title :global(.title-input) {
+    font-size: 1.35rem;
+    font-weight: 800;
+  }
+
+  .tools {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .people {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--rt-muted);
+  }
+
+  .people.warn {
+    color: #b7791f;
+  }
+
+  .avatars {
+    display: flex;
+  }
+
+  .avatar {
+    width: 1.7rem;
+    height: 1.7rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: #fff;
+    background: hsl(var(--h) 45% 48%);
+    border: 2px solid var(--rt-wall);
+    margin-left: -0.45rem;
+  }
+
+  .avatar:first-child {
+    margin-left: 0;
+  }
+
+  .votes-left {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--rt-accent);
+    background: rgba(var(--rt-accent-rgb), 0.12);
+    border-radius: 999px;
+    padding: 0.2rem 0.65rem;
+    white-space: nowrap;
+  }
+
+  .votes-left.out {
+    color: var(--rt-muted);
+    background: var(--rt-lane);
+  }
+
+  .name-field {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+  }
+
+  .name-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--rt-muted);
+    white-space: nowrap;
+  }
+
+  .name-field input {
     width: 9rem;
+  }
+
+  .tool-btn {
+    border: 0;
+    background: none;
+    color: var(--rt-muted);
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .tool-btn:hover {
+    background: var(--rt-lane);
+    color: var(--rt-ink);
+  }
+
+  @media (max-width: 575px) {
+    .rt-header {
+      padding: 0.5rem 0.75rem;
+    }
+    .people-label,
+    .name-label {
+      display: none;
+    }
+    .name-field input {
+      width: 7.5rem;
+    }
   }
 </style>

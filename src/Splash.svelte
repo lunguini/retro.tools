@@ -52,15 +52,9 @@
 </svelte:head>
 
 <div class="d-flex flex-column scroll h-100">
-  <div class="px-2 pt-1 pb-5">
+  <div class="topbar">
     <div class="d-flex justify-content-between align-items-center flex-wrap">
-      <h3
-        class="text-uppercase fw-bold p-0 m-0"
-        class:text-primary={!$darkMode}
-        class:text-secondary={$darkMode}
-      >
-        retro.tools
-      </h3>
+      <span class="wordmark">retro.tools</span>
       <div class="text-end flex-grow-1 text-nowrap d-flex justify-content-end">
         <Button
           id="darkLightToggle"
@@ -109,130 +103,59 @@
         <LocaleSelect />
       </div>
     </div>
-    <hr class="mt-1 mb-4" />
-    <div class="d-flex justify-content-center">
-      <div class="top-section">
-        <h1
-          data-name="splash-hero"
-          class="text-center mb-3 text-body"
-          style="margin-top: 100px;"
-        >
-          {$_('splash.hero_text')}
-        </h1>
-        <p
-          data-name="splash-privacy"
-          class="text-center text-secondary mb-5 mx-auto privacy-note"
-        >
-          🔒 {$_('splash.privacy_note')}
+  </div>
+  <main class="home">
+    <section class="hero">
+      <h1 data-name="splash-hero" class="hero-title">
+        {$_('splash.hero_text')}
+      </h1>
+      <p data-name="splash-privacy" class="hero-lede">
+        {$_('splash.privacy_note')}
+      </p>
+      <div class="hero-form">
+        <CreateForm
+          onerror={handleError}
+          oncreated={(boardId) => navigate(`/${boardId}`)}
+        />
+      </div>
+      <BoardTable
+        {boards}
+        onclick={(boardId) => navigate(`/${boardId}`)}
+        onerror={handleError}
+        ondeleted={doGetBoards}
+      />
+    </section>
+
+    <section class="points" aria-label={$_('splash.why')}>
+      <div class="point">
+        <span class="point-icon"><Icons.anonymous size="22" /></span>
+        <h2>{$_('splash.features.anonymous.title')}</h2>
+        <p>{$_('splash.features.anonymous.body_1')}</p>
+      </div>
+      <div class="point">
+        <span class="point-icon"><Icons.login size="22" /></span>
+        <h2>{$_('splash.features.no_logins.title')}</h2>
+        <p>{$_('splash.features.no_logins.body')}</p>
+      </div>
+      <div class="point">
+        <span class="point-icon"><Icons.lock size="22" /></span>
+        <h2>{$_('splash.features.encryption.title')}</h2>
+        <p>
+          {$_('splash.features.encryption.body_1')}
         </p>
-        <div class="d-flex flex-column justify-content-center">
-          <CreateForm
-            onerror={handleError}
-            oncreated={(boardId) => navigate(`/${boardId}`)}
-          />
-          <BoardTable
-            {boards}
-            onclick={(boardId) => navigate(`/${boardId}`)}
-            onerror={handleError}
-            ondeleted={doGetBoards}
-          />
-        </div>
       </div>
-    </div>
-  </div>
-  <div class="flex-grow-1 mid-section"></div>
-  <div
-    class="d-flex justify-content-center py-5 text-{$colorMode}"
-    class:bg-primary={!$darkMode}
-    class:bg-secondary={$darkMode}
-  >
-    <div class="d-flex flex-column">
-      <div class="d-flex justify-content-around py-4 flex-wrap">
-        <div class="card">
-          <div class="card-top">
-            <Icons.anonymous size="100%" />
-          </div>
-          <div class="card-body">
-            <h5 class="card-title">{$_('splash.features.anonymous.title')}</h5>
-            <p class="card-text">
-              {$_('splash.features.anonymous.body_1')}
-              <br />
-              <br />
-              <a
-                class="text-{$colorMode}"
-                target="_blank"
-                rel="noreferrer"
-                href="https://github.com/lunguini/retro.tools"
-              >
-                {$_('splash.features.anonymous.code_link')}
-              </a>
-              {$_('splash.features.anonymous.body_2')}
-              <br />
-            </p>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-top">
-            <Icons.phone size="100%" />
-          </div>
-          <div class="card-body">
-            <h5 class="card-title">{$_('splash.features.simple.title')}</h5>
-            <p class="card-text">
-              {$_('splash.features.simple.body')}
-            </p>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-top">
-            <Icons.code size="100%" />
-          </div>
-          <div class="card-body">
-            <h5 class="card-title">
-              {$_('splash.features.open_source.title')}
-            </h5>
-            <p class="card-text">
-              {$_('splash.features.open_source.body')}
-              <a
-                class="text-{$colorMode}"
-                rel="noreferrer"
-                target="_blank"
-                href="https://github.com/lunguini/retro.tools"
-              >
-                {$_('splash.features.open_source.github_link')}
-              </a>
-            </p>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-top">
-            <Icons.login size="100%" />
-          </div>
-          <div class="card-body">
-            <h5 class="card-title">{$_('splash.features.no_logins.title')}</h5>
-            <p class="card-text">
-              {$_('splash.features.no_logins.body')}
-              <br />
-              <br />
-            </p>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-top">
-            <Icons.lock size="100%" />
-          </div>
-          <div class="card-body">
-            <h5 class="card-title">{$_('splash.features.encryption.title')}</h5>
-            <p class="card-text">
-              {$_('splash.features.encryption.body_1')}
-              <br />
-              <br />
-              {$_('splash.features.encryption.body_2')}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+    </section>
+
+    <footer class="home-foot">
+      {$_('splash.features.open_source.body')}
+      <a
+        rel="noreferrer"
+        target="_blank"
+        href="https://github.com/lunguini/retro.tools"
+        >{$_('splash.features.open_source.github_link')}</a
+      >
+    </footer>
+  </main>
 </div>
 
 {#if errorAlertVisible}
@@ -267,39 +190,77 @@
     filter: brightness(0.6);
   }
 
-  .card-text {
-    opacity: 0.7;
+  .topbar {
+    padding: 0.6rem 1rem;
   }
 
-  .card {
-    flex-basis: 10em;
-    max-width: 20em;
-    flex-grow: 1;
-    flex-shrink: 1;
-    margin: 1em;
-    background-color: #0000;
-    border: 0;
+  .wordmark {
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: var(--rt-ink);
   }
 
-  .card-top {
-    height: 3em;
-    width: 3em;
+  .home {
+    width: 100%;
+    max-width: 44rem;
     margin: 0 auto;
+    padding: 0 1rem 3rem;
   }
 
-  .card-title {
-    text-align: center;
+  .hero {
+    padding-top: clamp(2rem, 9vh, 6rem);
   }
 
-  .top-section {
-    width: 40em;
+  .hero-title {
+    font-size: clamp(2rem, 5vw, 3.1rem);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    max-width: 16ch;
+    margin-bottom: 1rem;
   }
 
-  .mid-section {
-    flex-basis: 100px;
-    flex-shrink: 0;
+  .hero-lede {
+    font-size: 1.1rem;
+    line-height: 1.5;
+    color: var(--rt-muted);
+    max-width: 36rem;
+    margin-bottom: 2rem;
   }
-  .privacy-note {
-    max-width: 34rem;
+
+  .hero-form {
+    margin-bottom: 1.5rem;
+  }
+
+  .points {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 1.75rem;
+    margin-top: 3.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rt-line);
+  }
+
+  .point h2 {
+    font-size: 1rem;
+    font-weight: 800;
+    margin: 0.5rem 0 0.35rem;
+  }
+
+  .point p {
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: var(--rt-muted);
+    margin: 0;
+  }
+
+  .point-icon {
+    color: var(--rt-accent);
+  }
+
+  .home-foot {
+    margin-top: 2.5rem;
+    font-size: 0.85rem;
+    color: var(--rt-muted);
   }
 </style>

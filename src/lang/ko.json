@@ -92,7 +92,7 @@
   "splash.import_template": "템플릿 가져오기",
   "board.template.custom.name": "사용자 정의 (가져옴)",
   "error.invalid_template": "잘못된 템플릿 파일",
-  "splash.hero_text": "간단하게. 회고록.",
+  "splash.hero_text": "팀 회고를 실시간으로 함께 진행하세요.",
   "splash.features.anonymous.title": "서버 없음",
   "splash.features.anonymous.body_1": "백엔드가 없습니다. 보드 참여자의 브라우저 외에는 어디에도 저장되지 않습니다. 보드를 삭제하면 내 사본이 제거됩니다.",
   "splash.features.anonymous.code_link": "코드는",
@@ -124,5 +124,12 @@
   "board.waiting.body": "보드는 참여자의 브라우저에만 존재합니다. 이 보드를 가진 사람이 열면 여기에 로드됩니다. 링크를 공유하거나 보드를 열어 두도록 요청하세요.",
   "board.waiting.blocked": "참여자를 찾았지만 직접 연결할 수 없습니다. 네트워크(주로 회사 방화벽이나 VPN)가 P2P 연결을 막고 있습니다. 휴대폰 핫스팟 등 다른 네트워크를 사용해 보세요.",
   "board.waiting.blocked_turn": "참여자를 찾았지만 릴레이를 통해서도 연결할 수 없습니다. 네트워크나 VPN을 확인하세요.",
-  "board.waiting.home": "홈으로"
+  "board.waiting.home": "홈으로",
+  "splash.why": "retro.tools를 쓰는 이유",
+  "card.delete_confirm": "이 카드를 삭제할까요?",
+  "card.react": "반응 추가",
+  "card.vote": "이 카드에 투표",
+  "board.column_options": "열 색상 및 아이콘",
+  "board.delete_column": "열 삭제",
+  "general.toggle_theme": "밝은/어두운 테마 전환"
 }

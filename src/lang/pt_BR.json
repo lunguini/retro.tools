@@ -5,7 +5,7 @@
   "general.donate": "Doar",
   "general.untitled": "Sem título",
   "general.feedback": "Dar Feedback",
-  "splash.hero_text": "Simples. Retros.",
+  "splash.hero_text": "Faça a retro do seu time junto, ao vivo.",
   "splash.board_name": "Nome do Quadro",
   "splash.board_name_example": "Retrospectiva da Sprint 21",
   "splash.template": "Modelo",
@@ -72,7 +72,7 @@
   "card.agree": "Concordo",
   "card.undo": "Desfazer",
   "card.edit": "Editar",
-  "card.delete": "Apagar",
+  "card.delete": "Excluir",
   "card.are_you_sure": "Você tem certeza?",
   "card.anonymous": "Anônimo",
   "language.en": "English",
@@ -124,5 +124,12 @@
   "board.waiting.body": "Os quadros existem apenas nos navegadores dos participantes. Assim que alguém que tenha este quadro abri-lo, ele carregará aqui. Compartilhe o link ou peça para manterem o quadro aberto.",
   "board.waiting.blocked": "Participantes encontrados, mas sem conexão direta. Uma das redes (geralmente firewall corporativo ou VPN) bloqueia conexões P2P. Tente outra rede, como o hotspot do celular.",
   "board.waiting.blocked_turn": "Participantes encontrados, mas sem conexão nem pelo relay. Verifique sua rede ou VPN.",
-  "board.waiting.home": "Voltar ao início"
+  "board.waiting.home": "Voltar ao início",
+  "splash.why": "Por que retro.tools",
+  "card.delete_confirm": "Excluir este cartão?",
+  "card.react": "Adicionar reação",
+  "card.vote": "Votar neste cartão",
+  "board.column_options": "Cor e ícone da coluna",
+  "board.delete_column": "Excluir coluna",
+  "general.toggle_theme": "Alternar tema claro/escuro"
 }

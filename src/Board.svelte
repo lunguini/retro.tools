@@ -340,15 +340,10 @@
       <IceBreaker class="w-50" />
       <div
         class="d-none d-lg-flex justify-content-center overflow-hidden
-        min-vh-90"
+        min-vh-90 px-2 pb-3"
       >
         {#each sortedRanks as rank, i (rank.id)}
           <Rank bind:rank={sortedRanks[i]} {drake} onerror={handleError} />
-          {#if i !== sortedRanks.length - 1}
-            <div
-              class="spacer-{$colorMode} my-5 flex-grow-0 flex-shrink-0"
-            ></div>
-          {/if}
         {:else}
           <p class="text-center text-secondary mt-5">
             {$_('board.no_columns')}
@@ -466,14 +461,6 @@
 <style>
   .scroll {
     overflow: auto;
-  }
-
-  .spacer-light {
-    border-right: 0.1em solid #e6e6e6;
-  }
-
-  .spacer-dark {
-    border-right: 0.1em solid #495057;
   }
 
   .icon {

@@ -92,7 +92,7 @@
   "splash.import_template": "Vorlage importieren",
   "board.template.custom.name": "Benutzerdefiniert (importiert)",
   "error.invalid_template": "Ungültige Vorlagendatei",
-  "splash.hero_text": "Einfach. Retros.",
+  "splash.hero_text": "Führt eure Team-Retro gemeinsam und live durch.",
   "splash.features.anonymous.title": "Keine Server",
   "splash.features.anonymous.body_1": "Es gibt kein Backend: Nichts wird gespeichert außer in den Browsern der Teilnehmenden. Beim Löschen eines Boards wird deine Kopie entfernt.",
   "splash.features.anonymous.code_link": "Unser Code",
@@ -124,5 +124,12 @@
   "board.waiting.body": "Boards existieren nur in den Browsern der Teilnehmenden. Sobald jemand mit diesem Board es öffnet, wird es hier geladen. Teile den Link oder bitte darum, das Board offen zu lassen.",
   "board.waiting.blocked": "Teilnehmende gefunden, aber keine direkte Verbindung möglich. Ein Netzwerk (oft Firmen-Firewall oder VPN) blockiert Peer-to-Peer-Verbindungen. Versuche ein anderes Netz, z. B. einen Handy-Hotspot.",
   "board.waiting.blocked_turn": "Teilnehmende gefunden, aber auch über das Relay keine Verbindung. Prüfe Netzwerk oder VPN.",
-  "board.waiting.home": "Zur Startseite"
+  "board.waiting.home": "Zur Startseite",
+  "splash.why": "Warum retro.tools",
+  "card.delete_confirm": "Diese Karte löschen?",
+  "card.react": "Reaktion hinzufügen",
+  "card.vote": "Für diese Karte stimmen",
+  "board.column_options": "Spaltenfarbe und Symbol",
+  "board.delete_column": "Spalte löschen",
+  "general.toggle_theme": "Helles/dunkles Design wechseln"
 }

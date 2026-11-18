@@ -1,0 +1,147 @@
+/* retro.tools theme — loaded after Bootstrap so these tokens win.
+   Type: Atkinson Hyperlegible Next (built for legibility; boards are often
+   read off a shared screen). Colour: cool neutral "wall", white cards, one
+   indigo accent for focus/primary; column colours tint each lane. */
+
+:root,
+[data-bs-theme='light'] {
+  --rt-wall: #eef1f5;
+  --rt-lane: #e4e8ee;
+  --rt-card: #ffffff;
+  --rt-ink: #1d2230;
+  --rt-muted: #5f6878;
+  --rt-line: #d3d9e2;
+  --rt-accent: #4c55c9;
+  --rt-accent-rgb: 76, 85, 201;
+  --rt-shadow: 0 1px 2px rgba(29, 34, 48, 0.08);
+  --rt-lift: 0 10px 28px rgba(29, 34, 48, 0.18);
+
+  --bs-body-bg: var(--rt-wall);
+  --bs-body-color: var(--rt-ink);
+  --bs-secondary-color: var(--rt-muted);
+  --bs-border-color: var(--rt-line);
+  --bs-primary: var(--rt-accent);
+  --bs-primary-rgb: var(--rt-accent-rgb);
+  --bs-link-color: var(--rt-accent);
+  --bs-link-color-rgb: var(--rt-accent-rgb);
+  --bs-link-hover-color: #3a42a8;
+}
+
+[data-bs-theme='dark'] {
+  --rt-wall: #15171c;
+  --rt-lane: #1c1f26;
+  --rt-card: #262a33;
+  --rt-ink: #e8eaf0;
+  --rt-muted: #9aa2b2;
+  --rt-line: #333845;
+  --rt-accent: #8f97ff;
+  --rt-accent-rgb: 143, 151, 255;
+  --rt-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --rt-lift: 0 12px 32px rgba(0, 0, 0, 0.55);
+
+  --bs-body-bg: var(--rt-wall);
+  --bs-body-color: var(--rt-ink);
+  --bs-secondary-color: var(--rt-muted);
+  --bs-border-color: var(--rt-line);
+  --bs-primary: var(--rt-accent);
+  --bs-primary-rgb: var(--rt-accent-rgb);
+  --bs-link-color: var(--rt-accent);
+  --bs-link-color-rgb: var(--rt-accent-rgb);
+  --bs-link-hover-color: #b3b9ff;
+}
+
+body {
+  font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  font-size: 15px;
+  background: var(--rt-wall);
+  color: var(--rt-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* Buttons & inputs: calmer than Bootstrap defaults */
+.btn-primary {
+  --bs-btn-bg: var(--rt-accent);
+  --bs-btn-border-color: var(--rt-accent);
+  --bs-btn-hover-bg: #3a42a8;
+  --bs-btn-hover-border-color: #3a42a8;
+  --bs-btn-active-bg: #333a96;
+  font-weight: 700;
+}
+[data-bs-theme='dark'] .btn-primary {
+  --bs-btn-color: #15171c;
+  --bs-btn-hover-color: #15171c;
+  --bs-btn-hover-bg: #a9afff;
+  --bs-btn-hover-border-color: #a9afff;
+}
+
+.form-control,
+textarea.form-control {
+  background-color: var(--rt-card);
+  border-color: var(--rt-line);
+  color: var(--rt-ink);
+}
+.form-control:focus {
+  border-color: var(--rt-accent);
+  box-shadow: 0 0 0 3px rgba(var(--rt-accent-rgb), 0.2);
+}
+.form-control::placeholder {
+  color: var(--rt-muted);
+  opacity: 0.8;
+}
+
+:focus-visible {
+  outline: 2px solid var(--rt-accent);
+  outline-offset: 2px;
+}
+
+/* Old accent surfaces now follow the theme */
+.bg-light-accent,
+.bg-dark-accent {
+  background-color: transparent !important;
+  border: 0 !important;
+}
+.bg-light,
+.bg-dark {
+  background-color: var(--rt-wall) !important;
+}
+
+/* Quiet toolbar buttons (theme-coloured Bootstrap buttons) */
+.btn-light,
+.btn-dark {
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-color: var(--rt-muted);
+  --bs-btn-hover-bg: var(--rt-lane);
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-hover-color: var(--rt-ink);
+  --bs-btn-active-bg: var(--rt-lane);
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-active-color: var(--rt-ink);
+  font-weight: 600;
+}
+
+/* Dropdown menu */
+.dropdown-menu {
+  --bs-dropdown-bg: var(--rt-card);
+  --bs-dropdown-border-color: var(--rt-line);
+  --bs-dropdown-link-active-bg: var(--rt-accent);
+  box-shadow: var(--rt-lift);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
