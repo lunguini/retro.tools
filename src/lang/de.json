@@ -117,5 +117,12 @@
   "board.add_card": "Karte hinzufügen…",
   "board.rename_column": "Zum Umbenennen klicken",
   "board.your_name": "Dein Name",
-  "board.your_name_hint": "Wird auf deinen Karten angezeigt. Leer lassen, um anonym zu bleiben."
+  "board.your_name_hint": "Wird auf deinen Karten angezeigt. Leer lassen, um anonym zu bleiben.",
+  "board.online": "{count} online",
+  "board.you": "du",
+  "board.waiting.title": "Warte auf jemanden mit diesem Board…",
+  "board.waiting.body": "Boards existieren nur in den Browsern der Teilnehmenden. Sobald jemand mit diesem Board es öffnet, wird es hier geladen. Teile den Link oder bitte darum, das Board offen zu lassen.",
+  "board.waiting.blocked": "Teilnehmende gefunden, aber keine direkte Verbindung möglich. Ein Netzwerk (oft Firmen-Firewall oder VPN) blockiert Peer-to-Peer-Verbindungen. Versuche ein anderes Netz, z. B. einen Handy-Hotspot.",
+  "board.waiting.blocked_turn": "Teilnehmende gefunden, aber auch über das Relay keine Verbindung. Prüfe Netzwerk oder VPN.",
+  "board.waiting.home": "Zur Startseite"
 }

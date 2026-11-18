@@ -117,5 +117,12 @@
   "board.add_card": "Adicionar cartão…",
   "board.rename_column": "Clique para renomear",
   "board.your_name": "Seu nome",
-  "board.your_name_hint": "Aparece nos cartões que você adicionar. Deixe vazio para ficar anônimo."
+  "board.your_name_hint": "Aparece nos cartões que você adicionar. Deixe vazio para ficar anônimo.",
+  "board.online": "{count} online",
+  "board.you": "você",
+  "board.waiting.title": "Aguardando alguém com este quadro…",
+  "board.waiting.body": "Os quadros existem apenas nos navegadores dos participantes. Assim que alguém que tenha este quadro abri-lo, ele carregará aqui. Compartilhe o link ou peça para manterem o quadro aberto.",
+  "board.waiting.blocked": "Participantes encontrados, mas sem conexão direta. Uma das redes (geralmente firewall corporativo ou VPN) bloqueia conexões P2P. Tente outra rede, como o hotspot do celular.",
+  "board.waiting.blocked_turn": "Participantes encontrados, mas sem conexão nem pelo relay. Verifique sua rede ou VPN.",
+  "board.waiting.home": "Voltar ao início"
 }

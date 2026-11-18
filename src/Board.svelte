@@ -22,8 +22,16 @@
     subscribeToCards,
     subscribeToRanks,
   } from './firestore.js';
-  import { openBoard, closeBoard, onPeersChange } from './p2p.js';
-  import { peers, localFocusedCard } from './store.js';
+  import {
+    openBoard,
+    closeBoard,
+    onPeersChange,
+    waitForBoard,
+    setPresenceName,
+    hasTurn,
+  } from './p2p.js';
+  import { peers, localFocusedCard, author } from './store.js';
+  import ClipboardJS from 'clipboard';
 
   import PasswordWall from './components/PasswordWall.svelte';
   import Rank from './components/Rank.svelte';
@@ -133,7 +141,10 @@
 
   // Hold the board's P2P session open for as long as this page is mounted.
   const session = openBoard(boardId);
-  const unsubscribePeers = onPeersChange(session, (s) => peers.set(s.peers));
+  const unsubscribePeers = onPeersChange(session, (s) => peers.set(s));
+  const unsubscribeAuthor = author.subscribe((name) => setPresenceName(name));
+  let waiting = $state(false);
+  const shareUrl = `${location.origin}${import.meta.env.BASE_URL}${boardId}`;
 
   function onKeydown(e) {
     if (e.key !== 'Escape') return;
@@ -145,6 +156,16 @@
   }
 
   onMount(async () => {
+    const clipboard = new ClipboardJS('[data-name=waiting-copy-link]');
+    // No local copy: wait (indefinitely) for a participant who has it.
+    await session.ready;
+    if (!session.meta.has('created_at')) {
+      waiting = true;
+      await waitForBoard(session, Infinity);
+      waiting = false;
+    }
+    clipboard.destroy();
+
     let b;
     try {
       b = await getBoard(boardId);
@@ -242,6 +263,7 @@
     unsubscribeRanks && unsubscribeRanks();
     unsubscribeCards && unsubscribeCards();
     unsubscribePeers();
+    unsubscribeAuthor();
     $localFocusedCard = null;
     closeBoard(boardId);
     window.removeEventListener('offline', handleOffline);
@@ -258,7 +280,43 @@
 <div class="d-flex h-100 flex-column fixed-top fixed-bottom">
   <Header />
 
-  {#if busy}
+  {#if waiting}
+    <div
+      transition:fade={{ duration: 200 }}
+      class="position-absolute w-100 h-100"
+      data-name="waiting-for-peers"
+    >
+      <div class="d-flex justify-content-center align-items-center h-100 p-3">
+        <div class="text-center waiting">
+          <Spinner color="primary" />
+          <h4 class="mt-3">{$_('board.waiting.title')}</h4>
+          <p class="text-secondary">{$_('board.waiting.body')}</p>
+          {#if $peers.failures > 0}
+            <p class="text-warning" data-name="connect-failed">
+              {$_(
+                hasTurn ? 'board.waiting.blocked_turn' : 'board.waiting.blocked'
+              )}
+            </p>
+          {/if}
+          <button
+            class="btn btn-outline-primary btn-sm"
+            data-name="waiting-copy-link"
+            data-clipboard-text={shareUrl}
+          >
+            {$_('board.options.copy_link')}
+          </button>
+          <a
+            class="btn btn-link btn-sm"
+            href={import.meta.env.BASE_URL}
+            onclick={(e) => {
+              e.preventDefault();
+              navigate('/');
+            }}>{$_('board.waiting.home')}</a
+          >
+        </div>
+      </div>
+    </div>
+  {:else if busy}
     <div
       transition:fade={{ duration: 200 }}
       class="position-absolute w-100 h-100"
@@ -437,6 +495,10 @@
 
   .tab-buttons {
     z-index: 1040;
+  }
+
+  .waiting {
+    max-width: 30rem;
   }
 
   .min-vh-90 {

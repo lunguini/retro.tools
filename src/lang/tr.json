@@ -117,5 +117,12 @@
   "board.add_card": "Kart ekle…",
   "board.rename_column": "Yeniden adlandırmak için tıklayın",
   "board.your_name": "Adınız",
-  "board.your_name_hint": "Eklediğiniz kartlarda gösterilir. Anonim kalmak için boş bırakın."
+  "board.your_name_hint": "Eklediğiniz kartlarda gösterilir. Anonim kalmak için boş bırakın.",
+  "board.online": "{count} çevrimiçi",
+  "board.you": "siz",
+  "board.waiting.title": "Bu panoya sahip birini bekliyor…",
+  "board.waiting.body": "Panolar yalnızca katılımcıların tarayıcılarında bulunur. Bu panoya sahip biri açtığı anda burada yüklenecek. Bağlantıyı paylaşın veya panoyu açık tutmalarını isteyin.",
+  "board.waiting.blocked": "Katılımcılar bulundu ama doğrudan bağlanılamadı. Ağlardan biri (genellikle şirket güvenlik duvarı veya VPN) P2P bağlantıları engelliyor. Telefon hotspot'u gibi başka bir ağ deneyin.",
+  "board.waiting.blocked_turn": "Katılımcılar bulundu ama aktarıcı üzerinden de bağlanılamadı. Ağınızı veya VPN'i kontrol edin.",
+  "board.waiting.home": "Ana sayfaya dön"
 }

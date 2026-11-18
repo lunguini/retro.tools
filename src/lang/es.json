@@ -117,5 +117,12 @@
   "board.add_card": "Añadir tarjeta…",
   "board.rename_column": "Haz clic para renombrar",
   "board.your_name": "Tu nombre",
-  "board.your_name_hint": "Se muestra en las tarjetas que añadas. Déjalo vacío para ser anónimo."
+  "board.your_name_hint": "Se muestra en las tarjetas que añadas. Déjalo vacío para ser anónimo.",
+  "board.online": "{count} en línea",
+  "board.you": "tú",
+  "board.waiting.title": "Esperando a alguien con este tablero…",
+  "board.waiting.body": "Los tableros solo viven en los navegadores de los participantes. En cuanto alguien que lo tenga lo abra, se cargará aquí. Comparte el enlace o pide que mantengan el tablero abierto.",
+  "board.waiting.blocked": "Se encontraron participantes, pero no hubo conexión directa. Una de las redes (a menudo un firewall corporativo o VPN) bloquea las conexiones P2P. Prueba otra red, como el punto de acceso del móvil.",
+  "board.waiting.blocked_turn": "Se encontraron participantes, pero no hubo conexión ni siquiera mediante el relé. Revisa tu red o VPN.",
+  "board.waiting.home": "Volver al inicio"
 }

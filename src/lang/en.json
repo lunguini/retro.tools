@@ -117,5 +117,12 @@
   "board.add_card": "Add a card…",
   "board.rename_column": "Click to rename",
   "board.your_name": "Your name",
-  "board.your_name_hint": "Shown on cards you add. Leave empty to stay anonymous."
+  "board.your_name_hint": "Shown on cards you add. Leave empty to stay anonymous.",
+  "board.online": "{count} online",
+  "board.you": "you",
+  "board.waiting.title": "Waiting for someone with this board…",
+  "board.waiting.body": "Boards live only in participants' browsers. As soon as someone who has this board opens it, it will load here. Share the link with them, or ask them to keep the board open.",
+  "board.waiting.blocked": "Found participants but couldn't connect directly. One of your networks (often a corporate firewall or VPN) is blocking peer-to-peer connections. Try another network, such as a phone hotspot.",
+  "board.waiting.blocked_turn": "Found participants but couldn't connect, even through the relay. Check your network or VPN.",
+  "board.waiting.home": "Back to home"
 }

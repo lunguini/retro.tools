@@ -57,27 +57,74 @@ export function forgetBoard(id) {
 
 const sessions = new Map();
 
+// Optional TURN relay for networks where direct WebRTC fails (strict NATs,
+// corporate firewalls). Set at build time, comma-separated URLs, e.g.
+// VITE_TURN_URLS=turn:turn.example.com:3478,turns:turn.example.com:5349
+// The relay only forwards already-encrypted WebRTC traffic.
+const env = import.meta.env;
+const turnConfig = env.VITE_TURN_URLS
+  ? [
+      {
+        urls: env.VITE_TURN_URLS.split(',').map((u) => u.trim()),
+        username: env.VITE_TURN_USERNAME,
+        credential: env.VITE_TURN_CREDENTIAL,
+      },
+    ]
+  : undefined;
+export const hasTurn = !!turnConfig;
+
+// Display name shared with peers (presence only; not stored in the board).
+let presenceName = '';
+const presenceSenders = new Set();
+export function setPresenceName(name) {
+  presenceName = name ?? '';
+  presenceSenders.forEach((send) => send());
+}
+
 function connect(boardId, ydoc) {
   const listeners = new Set();
-  const status = { peers: 0 };
+  // people: peerId -> display name; failures: peers we saw but couldn't reach
+  const status = { peers: 0, people: {}, failures: 0 };
   let room;
   try {
-    room = joinRoom({ appId: APP_ID, identity: 'none' }, boardId);
+    room = joinRoom(
+      { appId: APP_ID, identity: 'none', ...(turnConfig && { turnConfig }) },
+      boardId
+    );
   } catch (err) {
     console.error('P2P connection failed', err);
     return { status, listeners, leave() {} };
   }
   const sync = room.makeAction('ysync');
   const update = room.makeAction('yupdate');
-  const notify = () => listeners.forEach((l) => l(status));
+  const hello = room.makeAction('hello');
+  const notify = () =>
+    listeners.forEach((l) => l({ ...status, people: { ...status.people } }));
+  const sendHello = (target) =>
+    hello.send({ name: presenceName }, target ? { target } : undefined);
+  presenceSenders.add(sendHello);
+  hello.onMessage((msg, { peerId }) => {
+    status.people[peerId] = String(msg?.name ?? '').slice(0, 40);
+    notify();
+  });
+  room.onError?.((err) => {
+    if (err.code === 'peer-connect-failed' || err.code === 'handshake-failed') {
+      status.failures++;
+      notify();
+    }
+  });
 
   room.onPeerJoin(({ peerId }) => {
     status.peers = Object.keys(room.getPeers()).length;
+    status.people[peerId] ??= '';
+    status.failures = 0;
     notify();
+    sendHello(peerId);
     // Ask the new peer for what we're missing; they do the same.
     sync.send(Y.encodeStateVector(ydoc), { target: peerId });
   });
-  room.onPeerLeave(() => {
+  room.onPeerLeave(({ peerId }) => {
+    delete status.people[peerId];
     status.peers = Object.keys(room.getPeers()).length;
     notify();
   });
@@ -97,6 +144,7 @@ function connect(boardId, ydoc) {
     listeners,
     leave() {
       ydoc.off('update', onUpdate);
+      presenceSenders.delete(sendHello);
       room.leave();
     },
   };
@@ -162,14 +210,16 @@ export async function waitForBoard(s, timeoutMs = 15000) {
     const check = () => {
       if (s.meta.has('created_at')) {
         s.meta.unobserve(check);
-        clearTimeout(t);
+        if (t) clearTimeout(t);
         resolve();
       }
     };
-    const t = setTimeout(() => {
-      s.meta.unobserve(check);
-      reject(new Error('Not Found'));
-    }, timeoutMs);
+    const t =
+      Number.isFinite(timeoutMs) &&
+      setTimeout(() => {
+        s.meta.unobserve(check);
+        reject(new Error('Not Found'));
+      }, timeoutMs);
     s.meta.observe(check);
   });
 }

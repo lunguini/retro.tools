@@ -117,5 +117,12 @@
   "board.add_card": "카드 추가…",
   "board.rename_column": "클릭하여 이름 변경",
   "board.your_name": "내 이름",
-  "board.your_name_hint": "내가 추가한 카드에 표시됩니다. 비워 두면 익명입니다."
+  "board.your_name_hint": "내가 추가한 카드에 표시됩니다. 비워 두면 익명입니다.",
+  "board.online": "{count}명 접속 중",
+  "board.you": "나",
+  "board.waiting.title": "이 보드를 가진 참여자를 기다리는 중…",
+  "board.waiting.body": "보드는 참여자의 브라우저에만 존재합니다. 이 보드를 가진 사람이 열면 여기에 로드됩니다. 링크를 공유하거나 보드를 열어 두도록 요청하세요.",
+  "board.waiting.blocked": "참여자를 찾았지만 직접 연결할 수 없습니다. 네트워크(주로 회사 방화벽이나 VPN)가 P2P 연결을 막고 있습니다. 휴대폰 핫스팟 등 다른 네트워크를 사용해 보세요.",
+  "board.waiting.blocked_turn": "참여자를 찾았지만 릴레이를 통해서도 연결할 수 없습니다. 네트워크나 VPN을 확인하세요.",
+  "board.waiting.home": "홈으로"
 }

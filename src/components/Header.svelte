@@ -18,6 +18,11 @@
   import { Icons } from '../data';
   import Input from './Input.svelte';
 
+  let onlineNames = $derived([
+    `${$author || $_('card.anonymous')} (${$_('board.you')})`,
+    ...Object.values($peers.people).map((n) => n || $_('card.anonymous')),
+  ]);
+
   let editMode = $state(false);
   let newBoardName = $state('');
 
@@ -134,12 +139,25 @@
       {/if}
       <span
         data-name="peer-count"
-        class="badge align-self-center me-2 text-bg-{$peers > 0
+        class="badge align-self-center me-2 text-bg-{$peers.peers > 0
           ? 'success'
-          : 'secondary'}"
-        title={$_('board.peers_hint')}
+          : $peers.failures > 0
+            ? 'warning'
+            : 'secondary'}"
+        title={$peers.failures > 0 && $peers.peers === 0
+          ? $_('board.waiting.blocked')
+          : onlineNames.join('\n') || $_('board.peers_hint')}
       >
-        {$_('board.peers', { values: { count: $peers } })}
+        {#if $peers.peers === 0}
+          {$_('board.peers', { values: { count: 0 } })}
+        {:else}
+          {$_('board.online', { values: { count: $peers.peers + 1 } })}
+          <span class="d-none d-xl-inline fw-normal"
+            >· {onlineNames.slice(0, 3).join(', ')}{onlineNames.length > 3
+              ? ` +${onlineNames.length - 3}`
+              : ''}</span
+          >
+        {/if}
       </span>
       <LocaleSelect class="me-1 h-100" />
       <Menu />

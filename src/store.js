@@ -68,7 +68,7 @@ export const author = persisted('authorName', '');
 export const focusedRank = writable('');
 export const firebaseToken = writable('');
 export const uid = writable('');
-export const peers = writable(0);
+export const peers = writable({ peers: 0, people: {}, failures: 0 });
 export const activeRankOptions = writable('');
 // Card focus for participants who can't set the board-wide (synced) focus.
 export const localFocusedCard = writable(null);
