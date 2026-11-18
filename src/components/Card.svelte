@@ -37,6 +37,14 @@
 
   let focused = $derived($focusedCard === card.id);
   let dimmed = $derived($focusedCard != null && !focused);
+  let cardEl = $state();
+
+  // Bring the focused card into view for every participant.
+  $effect(() => {
+    if (focused && cardEl?.offsetParent) {
+      cardEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  });
 
   function setFocus(id) {
     if ($board.owner || $board.open_permission) {
@@ -152,6 +160,7 @@
 <div
   data-name="card"
   data-focused={focused}
+  bind:this={cardEl}
   class:busy={card.busy}
   class:focused
   class:dimmed

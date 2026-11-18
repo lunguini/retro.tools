@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { flip } from 'svelte/animate';
-  import { _ } from 'svelte-i18n';
+  import { _, dictionary } from 'svelte-i18n';
 
   import {
     activeRankOptions,
@@ -25,6 +25,7 @@
   import Button from './Button.svelte';
   import { slide } from 'svelte/transition';
   import RankOptions from './RankOptions.svelte';
+  import Input from './Input.svelte';
 
   let { rank = $bindable(), drake = null, onerror } = $props();
 
@@ -46,6 +47,30 @@
         : `col-lg-${Math.floor(12 / $ranks.length)}`
   );
   let newCardText = $state('');
+  let canManage = $derived($board.owner || $board.open_permission);
+  let displayName = $derived(
+    $dictionary.en && rank.name in $dictionary.en ? $_(rank.name) : rank.name
+  );
+  let renaming = $state(false);
+  let newName = $state('');
+
+  function startRename() {
+    if (!canManage) return;
+    newName = displayName;
+    renaming = true;
+  }
+
+  async function submitRename() {
+    if (!renaming) return;
+    renaming = false;
+    const name = newName.trim();
+    if (!name || name === displayName) return;
+    try {
+      await updateRank($board.id, { ...rank, name });
+    } catch (err) {
+      error('error.network', err);
+    }
+  }
   let deleteConfirmMode = $state(false);
 
   function error(message, err) {
@@ -128,27 +153,57 @@
           <SvelteComponent />
         </div>
       </div>
+      <div class="d-flex flex-grow-1 align-items-center min-w-0">
+        {#if renaming}
+          <Input
+            data-name="rank-name-input"
+            autofocus
+            bind:value={newName}
+            onsubmit={submitRename}
+            oncancel={() => (renaming = false)}
+            onblur={submitRename}
+            class="py-0 fw-bold"
+          />
+        {:else}
+          <h5
+            data-name="rank-name"
+            class="m-0 fw-bold text-uppercase text-truncate rank-name"
+            class:editable={canManage}
+            title={canManage ? $_('board.rename_column') : displayName}
+            role={canManage ? 'button' : undefined}
+            tabindex={canManage ? 0 : undefined}
+            onclick={startRename}
+            onkeydown={(e) => e.key === 'Enter' && startRename()}
+          >
+            {displayName}
+          </h5>
+        {/if}
+      </div>
+      {#if $board.owner || $board.open_permission}
+        <Button
+          data-name="delete-button"
+          textColor={!$darkMode ? 'danger' : 'body'}
+          class="bg-{$colorMode}-accent border ms-1"
+          onclick={() => (deleteConfirmMode = true)}
+        >
+          <div class="icon">
+            <Icons.trash class="align-top" size="1.4x" />
+          </div>
+        </Button>
+      {/if}
+    </div>
+    <div class="d-flex mb-2" class:blur={deleteConfirmMode}>
       <div class="d-flex input-group flex-nowrap">
         <Textarea
           autoresize
           data-name="card-text-input"
           onsubmit={newCard}
-          placeholder={$_(rank.name)}
+          placeholder={$_('board.add_card')}
           bind:value={newCardText}
           onfocus={() => ($focusedRank = rank.id)}
           minWidth="5em"
           class="flex-grow-1"
         />
-        {#if $focusedRank === rank.id}
-          <Textarea
-            data-name="card-author-input"
-            onsubmit={newCard}
-            placeholder={$_('board.author')}
-            bind:value={$author}
-            minWidth="5em"
-            class="flex-shrink-0 flex-grow-0 w-25"
-          />
-        {/if}
         <Button
           color={$colorMode}
           disabled={newCardText.length == 0}
@@ -159,18 +214,6 @@
             <Icons.enter size="100%" />
           </div>
         </Button>
-        {#if $board.owner || $board.open_permission}
-          <Button
-            data-name="delete-button"
-            textColor={!$darkMode ? 'danger' : 'body'}
-            class="bg-{$colorMode}-accent border"
-            onclick={() => (deleteConfirmMode = true)}
-          >
-            <div class="icon">
-              <Icons.trash class="align-top" size="1.4x" />
-            </div>
-          </Button>
-        {/if}
       </div>
     </div>
 
@@ -249,5 +292,17 @@
 
   .busy {
     opacity: 0.66;
+  }
+  .rank-name.editable {
+    cursor: text;
+    border-bottom: 1px dashed transparent;
+  }
+
+  .rank-name.editable:hover {
+    border-bottom-color: currentColor;
+  }
+
+  .min-w-0 {
+    min-width: 0;
   }
 </style>

@@ -10,6 +10,7 @@
     password,
     darkMode,
     peers,
+    author,
     votesUsed,
   } from '../store.js';
   import { decrypt, encrypt, checkBoardPassword } from '../encryption.js';
@@ -100,6 +101,21 @@
           {/if}
         </div>
       </Button>
+      <label
+        class="d-flex align-items-center me-2 mb-0 author-field"
+        title={$_('board.your_name_hint')}
+      >
+        <span class="me-1 small text-secondary text-nowrap"
+          >{$_('board.your_name')}</span
+        >
+        <input
+          data-name="card-author-input"
+          class="form-control form-control-sm"
+          placeholder={$_('card.anonymous')}
+          bind:value={$author}
+          maxlength="40"
+        />
+      </label>
       {#if $board.max_votes > 0}
         <span
           data-name="votes-remaining"
@@ -168,5 +184,8 @@
 
   .home-link {
     cursor: pointer;
+  }
+  .author-field input {
+    width: 9rem;
   }
 </style>

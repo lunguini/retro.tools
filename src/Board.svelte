@@ -252,7 +252,7 @@
 <svelte:window onkeydown={onKeydown} />
 
 <svelte:head>
-  <meta property="og:url" content="https://retro.tools/{boardId}" />
+  <meta property="og:url" content="https://retro.lunguini.com/{boardId}" />
 </svelte:head>
 
 <div class="d-flex h-100 flex-column fixed-top fixed-bottom">

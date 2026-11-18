@@ -155,7 +155,7 @@ export async function destroyBoard(boardId) {
 
 // Resolve once the board has content (locally or from a peer), or reject
 // after `timeoutMs` with nobody to sync from.
-export async function waitForBoard(s, timeoutMs = 8000) {
+export async function waitForBoard(s, timeoutMs = 15000) {
   await s.ready;
   if (s.meta.has('created_at')) return;
   await new Promise((resolve, reject) => {

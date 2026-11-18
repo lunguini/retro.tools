@@ -48,7 +48,7 @@
 </script>
 
 <svelte:head>
-  <meta property="og:url" content="https://retro.tools" />
+  <meta property="og:url" content="https://retro.lunguini.com" />
 </svelte:head>
 
 <div class="d-flex flex-column scroll h-100">
@@ -83,7 +83,7 @@
         <Button
           color={$colorMode}
           textColor="body"
-          href="https://github.com/d0x2f/retro.tools"
+          href="https://github.com/lunguini/retro.tools"
           rel="noreferrer"
           target="_blank"
           class="me-1"
@@ -114,11 +114,17 @@
       <div class="top-section">
         <h1
           data-name="splash-hero"
-          class="text-center mb-5 text-body"
+          class="text-center mb-3 text-body"
           style="margin-top: 100px;"
         >
           {$_('splash.hero_text')}
         </h1>
+        <p
+          data-name="splash-privacy"
+          class="text-center text-secondary mb-5 mx-auto privacy-note"
+        >
+          🔒 {$_('splash.privacy_note')}
+        </p>
         <div class="d-flex flex-column justify-content-center">
           <CreateForm
             onerror={handleError}
@@ -156,7 +162,7 @@
                 class="text-{$colorMode}"
                 target="_blank"
                 rel="noreferrer"
-                href="https://github.com/d0x2f/retro.tools"
+                href="https://github.com/lunguini/retro.tools"
               >
                 {$_('splash.features.anonymous.code_link')}
               </a>
@@ -190,7 +196,7 @@
                 class="text-{$colorMode}"
                 rel="noreferrer"
                 target="_blank"
-                href="https://github.com/d0x2f/retro.tools"
+                href="https://github.com/lunguini/retro.tools"
               >
                 {$_('splash.features.open_source.github_link')}
               </a>
@@ -292,5 +298,8 @@
   .mid-section {
     flex-basis: 100px;
     flex-shrink: 0;
+  }
+  .privacy-note {
+    max-width: 34rem;
   }
 </style>

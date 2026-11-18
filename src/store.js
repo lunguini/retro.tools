@@ -50,7 +50,21 @@ export const ranks = createSet();
 export const cards = createSet();
 export const sorted = writable(false);
 export const password = writable('');
-export const author = writable('');
+function persisted(key, initial) {
+  let start = initial;
+  try {
+    start = localStorage.getItem(key) ?? initial;
+  } catch {}
+  const store = writable(start);
+  store.subscribe((v) => {
+    try {
+      localStorage.setItem(key, v);
+    } catch {}
+  });
+  return store;
+}
+
+export const author = persisted('authorName', '');
 export const focusedRank = writable('');
 export const firebaseToken = writable('');
 export const uid = writable('');

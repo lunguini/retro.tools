@@ -31,7 +31,7 @@ jobs:
           CYPRESS_INSTALL_BINARY: 0
       - run: npm run build
         env:
-          BASE_PATH: /${{ github.event.repository.name }}/
+          BASE_PATH: /  # custom domain (public/CNAME)
       # SPA fallback: GitHub Pages serves 404.html for unknown paths like /<board-id>
       - run: cp dist/index.html dist/404.html
       - uses: actions/configure-pages@v5
