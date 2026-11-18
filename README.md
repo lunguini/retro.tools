@@ -1,3 +1,16 @@
+> **Fork note (`p2p` branch):** this fork runs with **no backend**. Boards are
+> [Yjs](https://yjs.dev) documents stored in each participant's browser
+> (IndexedDB) and synced peer-to-peer over WebRTC via
+> [Trystero](https://github.com/dmotz/trystero) (public Nostr relays are used
+> only for discovery). It deploys as a static site to GitHub Pages
+> (`.github/workflows/pages.yml`).
+>
+> Trade-offs: a board is only reachable while at least one participant who has
+> it is online; permissions and vote limits are enforced client-side; "delete"
+> forgets your local copy only.
+>
+> Also adds card focus (#218) and a per-person vote limit (#219).
+
 <h1 style="color:#007bff;font-weight:700;text-transform:uppercase;">RETRO.TOOLS</h1>
 
 ![Screenshot](./resources/screenshot-dark.png#gh-dark-mode-only)

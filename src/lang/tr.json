@@ -106,5 +106,11 @@
   "splash.features.no_logins.body": "Anonim ve pratik kalmak için hesap oluşturmanızı veya başka bilgi vermenizi istemeyeceğiz, sadece tıklayın ve başlayın!",
   "splash.features.encryption.title": "Uçtan Uca Şifreleme",
   "splash.features.encryption.body_1": "Pano şifreleme, bir şifre kullanılarak isteğe bağlı olarak mevcuttur.",
-  "splash.features.encryption.body_2": "Tüm şifreleme tarayıcı tarafından yapılır ve arka ucumuz yalnızca şifrelenmiş verileri görür!"
+  "splash.features.encryption.body_2": "Tüm şifreleme tarayıcı tarafından yapılır ve arka ucumuz yalnızca şifrelenmiş verileri görür!",
+  "error.vote_limit_reached": "Tüm oylarınızı kullandınız!",
+  "board.votes_remaining": "{remaining}/{max} oy kaldı",
+  "board.votes_remaining_hint": "Bu panoda hâlâ kullanabileceğiniz oylar",
+  "board.peers": "{count, plural, =0 {Eş yok} other {# eş}}",
+  "board.peers_hint": "Size doğrudan bağlı diğer katılımcılar",
+  "board.options.max_votes": "Kişi başı oy (0 = ∞)"
 }

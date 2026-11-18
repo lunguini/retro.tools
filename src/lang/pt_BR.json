@@ -106,5 +106,11 @@
   "splash.features.no_logins.body": "Para manter o anonimato e a conveniência, não pediremos que você crie uma conta ou forneça qualquer outra informação, simplesmente clique e comece!",
   "splash.features.encryption.title": "Criptografia de Ponta a Ponta",
   "splash.features.encryption.body_1": "A criptografia do quadro está disponível opcionalmente usando uma senha.",
-  "splash.features.encryption.body_2": "Toda a criptografia é feita pelo navegador e nosso backend vê apenas dados criptografados!"
+  "splash.features.encryption.body_2": "Toda a criptografia é feita pelo navegador e nosso backend vê apenas dados criptografados!",
+  "error.vote_limit_reached": "Você usou todos os seus votos!",
+  "board.votes_remaining": "{remaining}/{max} votos restantes",
+  "board.votes_remaining_hint": "Votos que você ainda pode dar neste quadro",
+  "board.peers": "{count, plural, =0 {Nenhum par} one {# par} other {# pares}}",
+  "board.peers_hint": "Outros participantes conectados diretamente a você",
+  "board.options.max_votes": "Votos por pessoa (0 = ∞)"
 }

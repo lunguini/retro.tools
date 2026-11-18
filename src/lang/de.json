@@ -106,5 +106,11 @@
   "splash.features.no_logins.body": "Um anonym und bequem zu bleiben, werden wir dich nicht bitten, ein Konto zu erstellen oder andere Informationen anzugeben – einfach klicken und loslegen!",
   "splash.features.encryption.title": "Ende-zu-Ende-Verschlüsselung",
   "splash.features.encryption.body_1": "Die Board-Verschlüsselung ist optional mit einem Passwort verfügbar.",
-  "splash.features.encryption.body_2": "Die gesamte Verschlüsselung erfolgt im Browser – unser Backend sieht nur verschlüsselte Daten!"
+  "splash.features.encryption.body_2": "Die gesamte Verschlüsselung erfolgt im Browser – unser Backend sieht nur verschlüsselte Daten!",
+  "error.vote_limit_reached": "Du hast alle deine Stimmen verbraucht!",
+  "board.votes_remaining": "{remaining}/{max} Stimmen übrig",
+  "board.votes_remaining_hint": "Stimmen, die du auf diesem Board noch abgeben kannst",
+  "board.peers": "{count, plural, =0 {Keine Peers} one {# Peer} other {# Peers}}",
+  "board.peers_hint": "Andere Teilnehmende, die direkt mit dir verbunden sind",
+  "board.options.max_votes": "Stimmen pro Person (0 = ∞)"
 }

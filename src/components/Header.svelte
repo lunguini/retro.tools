@@ -3,7 +3,15 @@
   import EncryptedText from './EncryptedText.svelte';
   import Menu from './Menu.svelte';
 
-  import { board, colorMode, password, darkMode } from '../store.js';
+  import { _ } from 'svelte-i18n';
+  import {
+    board,
+    colorMode,
+    password,
+    darkMode,
+    peers,
+    votesUsed,
+  } from '../store.js';
   import { decrypt, encrypt, checkBoardPassword } from '../encryption.js';
   import Button from './Button.svelte';
   import { Icons } from '../data';
@@ -43,7 +51,7 @@
     <div class="d-flex flex-column justify-content-center">
       <a
         data-name="home-link"
-        href="/"
+        href={import.meta.env.BASE_URL}
         class="text-uppercase fw-bold ps-2 m-0 home-link h3 text-decoration-none"
         class:text-primary={!$darkMode}
         class:text-secondary={$darkMode}
@@ -92,6 +100,31 @@
           {/if}
         </div>
       </Button>
+      {#if $board.max_votes > 0}
+        <span
+          data-name="votes-remaining"
+          class="badge align-self-center me-2"
+          class:text-bg-primary={$votesUsed < $board.max_votes}
+          class:text-bg-secondary={$votesUsed >= $board.max_votes}
+          title={$_('board.votes_remaining_hint')}
+        >
+          {$_('board.votes_remaining', {
+            values: {
+              remaining: Math.max(0, $board.max_votes - $votesUsed),
+              max: $board.max_votes,
+            },
+          })}
+        </span>
+      {/if}
+      <span
+        data-name="peer-count"
+        class="badge align-self-center me-2 text-bg-{$peers > 0
+          ? 'success'
+          : 'secondary'}"
+        title={$_('board.peers_hint')}
+      >
+        {$_('board.peers', { values: { count: $peers } })}
+      </span>
       <LocaleSelect class="me-1 h-100" />
       <Menu />
     </div>

@@ -1,3 +1,10 @@
+import { navigate } from 'svelte-routing';
+
+// navigate() relative to the deploy base path (e.g. GitHub Pages /repo/).
+export function go(path) {
+  navigate(import.meta.env.BASE_URL + path.replace(/^\//, ''));
+}
+
 export const filterDataKeys = (props) =>
   Object.fromEntries(
     Object.entries(props).filter(([key]) => key.startsWith('data-'))

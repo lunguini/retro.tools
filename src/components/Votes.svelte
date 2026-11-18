@@ -6,7 +6,13 @@
 
   import Button from './Button.svelte';
 
-  let { votes = 0, voted = false, color, ontoggleVote } = $props();
+  let {
+    votes = 0,
+    voted = false,
+    color,
+    disabled = false,
+    ontoggleVote,
+  } = $props();
 </script>
 
 <div class="d-flex">
@@ -14,6 +20,7 @@
     <Button
       data-name="vote-button"
       class="flex-grow-0 flex-shrink-0 p-1 bg-{$colorMode}-accent"
+      {disabled}
       onclick={() => ontoggleVote?.()}
     >
       <div class="icon" style="color: {$colors[color]}" class:unvoted={!voted}>

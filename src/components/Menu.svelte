@@ -27,11 +27,13 @@
   import QRCode from './QRCode.svelte';
   import Timer from './Timer.svelte';
   import ReadonlyCheckbox from './ReadonlyCheckbox.svelte';
-  import { navigate } from 'svelte-routing';
 
   let { onerror } = $props();
 
   let isOpen = $state(false);
+  let boardUrl = $derived(
+    `${location.origin}${import.meta.env.BASE_URL}${$board.id}`
+  );
   let showQR = $state(false);
   let showTimer = $state(false);
 
@@ -187,6 +189,31 @@
       />
     </DropdownItem>
     <DropdownItem
+      toggle={false}
+      disabled={!$board.owner && !$board.open_permission}
+    >
+      <label
+        class="d-flex align-items-center justify-content-between gap-2 m-0 w-100"
+        onclick={(e) => e.stopPropagation()}
+      >
+        {$_('board.options.max_votes')}
+        <input
+          data-name="max-votes-input"
+          type="number"
+          min="0"
+          max="99"
+          class="form-control form-control-sm max-votes"
+          disabled={!$board.owner && !$board.open_permission}
+          value={$board.max_votes ?? 0}
+          onchange={(e) =>
+            ($board = {
+              ...$board,
+              max_votes: Math.max(0, Math.min(99, +e.target.value || 0)),
+            })}
+        />
+      </label>
+    </DropdownItem>
+    <DropdownItem
       data-name="obscure-cards-button"
       toggle={false}
       disabled={!$board.owner && !$board.open_permission}
@@ -261,10 +288,7 @@
       </div>
       {$_('board.options.download_template')}
     </DropdownItem>
-    <DropdownItem
-      data-name="copy-link-button"
-      data-clipboard-text="{location.origin}/{$board.id}"
-    >
+    <DropdownItem data-name="copy-link-button" data-clipboard-text={boardUrl}>
       <div class="d-inline-block icon position-relative" style="top: 3px">
         <Icons.link size="1x" class="align-top" />
       </div>
@@ -305,7 +329,7 @@
   >
     <QRCode
       class="p-1"
-      text="{location.origin}/{$board.id}"
+      text={boardUrl}
       colorDark="#007bff"
       width="200"
       height="200"
@@ -327,6 +351,10 @@
   .icon {
     width: 1.5em;
     height: 1.6em;
+  }
+
+  .max-votes {
+    width: 4.5rem;
   }
 
   .qrcode {

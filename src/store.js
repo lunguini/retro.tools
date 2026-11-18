@@ -33,6 +33,7 @@ export const board = writable({
   cards_open: false,
   id: 'none',
   max_votes: 0,
+  focused_card: null,
   name: 'Unknown Board',
   voting_open: false,
   ice_breaking: '',
@@ -53,7 +54,22 @@ export const author = writable('');
 export const focusedRank = writable('');
 export const firebaseToken = writable('');
 export const uid = writable('');
+export const peers = writable(0);
 export const activeRankOptions = writable('');
+// Card focus for participants who can't set the board-wide (synced) focus.
+export const localFocusedCard = writable(null);
+export const focusedCard = derived(
+  [board, localFocusedCard],
+  ([$board, $local]) => $board.focused_card ?? $local
+);
+export const votesUsed = derived(
+  cards,
+  ($cards) => $cards.filter((c) => c.voted).length
+);
+export const voteLimitReached = derived(
+  [board, votesUsed],
+  ([$board, $used]) => $board.max_votes > 0 && $used >= $board.max_votes
+);
 
 export const darkMode = writable(
   window.localStorage.getItem('darkModePreference') !== null

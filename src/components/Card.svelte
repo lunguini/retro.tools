@@ -3,7 +3,16 @@
   import { Popover } from '@sveltestrap/sveltestrap';
   import { _ } from 'svelte-i18n';
 
-  import { board, cards, colorMode, darkMode, password } from '../store.js';
+  import {
+    board,
+    cards,
+    colorMode,
+    darkMode,
+    password,
+    focusedCard,
+    localFocusedCard,
+    voteLimitReached,
+  } from '../store.js';
   import {
     updateCard,
     deleteCard,
@@ -25,6 +34,28 @@
   let { card = $bindable(), color = $bindable(), onerror } = $props();
 
   let obscured = $derived($board.data?.obscure_cards && !card.owner);
+
+  let focused = $derived($focusedCard === card.id);
+  let dimmed = $derived($focusedCard != null && !focused);
+
+  function setFocus(id) {
+    if ($board.owner || $board.open_permission) {
+      $board = { ...$board, focused_card: id };
+    } else {
+      $localFocusedCard = id;
+    }
+  }
+
+  // Clicking a card focuses it (and unfocuses any other); clicking the
+  // focused card again, outside its editable text, unfocuses it.
+  function onCardClick(e) {
+    if (editMode || deleteConfirmMode) return;
+    if (e.target.closest('button, textarea, input, a, .popover')) return;
+    if (e.target.closest('[data-name=react-drawer-button]')) return;
+    const inContent = e.target.closest('[data-name=card-content]');
+    if (focused && !inContent) setFocus(null);
+    else if (!focused) setFocus(card.id);
+  }
 
   let editMode = $state(false);
   let reactDrawOpen = $state(false);
@@ -91,6 +122,10 @@
           card.voted = false;
         }
       } else {
+        if ($voteLimitReached) {
+          error('error.vote_limit_reached');
+          return;
+        }
         let response = await agree($board, card);
         if (response.ok) {
           card.voted = true;
@@ -112,13 +147,24 @@
   }
 </script>
 
-<div data-name="card" class:busy={card.busy} class="card bg-{$colorMode}">
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div
+  data-name="card"
+  data-focused={focused}
+  class:busy={card.busy}
+  class:focused
+  class:dimmed
+  class="card bg-{$colorMode}"
+  onclick={onCardClick}
+>
   <div class="d-flex" class:blur={deleteConfirmMode}>
     <div class="p-1 pt-votes flex-grow-0 bg-{$colorMode}-accent rounded-start">
       <Votes
         ontoggleVote={toggleVote}
         bind:votes={card.votes}
         bind:voted={card.voted}
+        disabled={$voteLimitReached && !card.voted}
         bind:color
       />
     </div>
@@ -261,6 +307,25 @@
 
   .busy {
     opacity: 0.66;
+  }
+
+  .card {
+    transition:
+      opacity 0.2s,
+      transform 0.2s,
+      box-shadow 0.2s;
+  }
+
+  .focused {
+    outline: 3px solid var(--bs-primary);
+    outline-offset: 2px;
+    box-shadow: 0 0.5rem 1.5rem rgba(var(--bs-primary-rgb), 0.35);
+    transform: scale(1.03);
+    z-index: 2;
+  }
+
+  .dimmed {
+    opacity: 0.5;
   }
 
   .blur {

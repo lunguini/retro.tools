@@ -3,7 +3,7 @@
   import { fade, fly } from 'svelte/transition';
   import dragula from 'dragula';
   import { _ } from 'svelte-i18n';
-  import { navigate } from 'svelte-routing';
+  import { go as navigate } from './utils.js';
 
   import {
     board,
@@ -22,6 +22,8 @@
     subscribeToCards,
     subscribeToRanks,
   } from './firestore.js';
+  import { openBoard, closeBoard, onPeersChange } from './p2p.js';
+  import { peers, localFocusedCard } from './store.js';
 
   import PasswordWall from './components/PasswordWall.svelte';
   import Rank from './components/Rank.svelte';
@@ -123,8 +125,23 @@
       a.cards_open === b.cards_open &&
       a.ice_breaking === b.ice_breaking &&
       a.open_permission === b.open_permission &&
+      a.max_votes === b.max_votes &&
+      a.focused_card === b.focused_card &&
       JSON.stringify(a.data) === JSON.stringify(b.data)
     );
+  }
+
+  // Hold the board's P2P session open for as long as this page is mounted.
+  const session = openBoard(boardId);
+  const unsubscribePeers = onPeersChange(session, (s) => peers.set(s.peers));
+
+  function onKeydown(e) {
+    if (e.key !== 'Escape') return;
+    if (e.target.closest?.('input, textarea')) return;
+    $localFocusedCard = null;
+    if ($board.focused_card && ($board.owner || $board.open_permission)) {
+      $board = { ...$board, focused_card: null };
+    }
   }
 
   onMount(async () => {
@@ -152,22 +169,10 @@
     // subscribeToX call internally awaits signIn(), which is now memoised so
     // concurrent callers share a single auth round-trip.
     const ranksTask = getRanks(boardId);
-    const subscribeBoardTask =
-      !$board.owner || $board.open_permission
-        ? subscribeToBoard(
-            boardId,
-            (b) => {
-              previousBoard = { ...b };
-              board.set(b);
-            },
-            () => {
-              navigate('/not-found');
-            },
-            () => {
-              connectionLost = true;
-            }
-          )
-        : Promise.resolve(null);
+    const subscribeBoardTask = subscribeToBoard(boardId, (b) => {
+      previousBoard = { ...b };
+      board.set(b);
+    });
     const subscribeCardsTask = subscribeToCards(
       boardId,
       (card) => cards.replace(card.id, card),
@@ -236,10 +241,15 @@
     unsubscribeBoard && unsubscribeBoard();
     unsubscribeRanks && unsubscribeRanks();
     unsubscribeCards && unsubscribeCards();
+    unsubscribePeers();
+    $localFocusedCard = null;
+    closeBoard(boardId);
     window.removeEventListener('offline', handleOffline);
     window.removeEventListener('online', handleOnline);
   });
 </script>
+
+<svelte:window onkeydown={onKeydown} />
 
 <svelte:head>
   <meta property="og:url" content="https://retro.tools/{boardId}" />

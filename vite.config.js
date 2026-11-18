@@ -3,6 +3,8 @@ import { svelte } from "@sveltejs/vite-plugin-svelte";
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // Set BASE_PATH=/repo-name/ when deploying to GitHub Pages project sites.
+  base: process.env.BASE_PATH ?? "/",
   plugins: [svelte()],
   define: {
     global: "window", // hack for dragula
@@ -11,8 +13,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes("firebase")) {
-            return "firebase";
+          if (id.includes("yjs") || id.includes("trystero")) {
+            return "p2p";
           }
           if (id.includes("crypto-js")) {
             return "crypto-js";
@@ -22,17 +24,6 @@ export default defineConfig({
           }
         },
       },
-    },
-  },
-  server: {
-    proxy: {
-      // Cloud
-      "/boards": "https://retrotools-dev-7kiihsiuqq-nw.a.run.app",
-      "/auth": "https://retrotools-dev-7kiihsiuqq-nw.a.run.app",
-
-      // Local
-      // "/boards": "http://localhost:8000",
-      // "/auth": "http://localhost:8000",
     },
   },
 });

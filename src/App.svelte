@@ -34,7 +34,7 @@
   });
 </script>
 
-<Router {url}>
+<Router {url} basepath={import.meta.env.BASE_URL.replace(/\/$/, '')}>
   <Route path="/">
     <div class="h-100" in:fade out:fade>
       <Splash />

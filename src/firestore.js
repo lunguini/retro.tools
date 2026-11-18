@@ -1,193 +1,78 @@
-import { getApp } from 'firebase/app';
-import {
-  getFirestore,
-  collection,
-  doc,
-  onSnapshot,
-  where,
-  query,
-} from 'firebase/firestore';
-import { getAuth, signInWithCustomToken } from 'firebase/auth';
-import * as jose from 'jose';
-import { get } from 'svelte/store';
+// Realtime subscriptions over the P2P Yjs document. Kept under the original
+// module name/signatures so components didn't need to change.
 
-import { createAuthToken } from './api.js';
-import { firebaseToken, uid } from './store.js';
+import { openBoard, closeBoard, getUid } from './p2p.js';
+import { normaliseBoard, normaliseCard, normaliseRank } from './api.js';
+import { uid } from './store.js';
 
-function tokenIsValid(token) {
-  if (!token) {
-    return false;
-  }
-
-  try {
-    const decodedToken = jose.decodeJwt(token);
-    if (!decodedToken.exp) {
-      return false;
-    }
-
-    const expiry = new Date(decodedToken.exp * 1000).getTime();
-    const now = new Date().getTime();
-
-    // 10 minute buffer
-    if (expiry - now < 600_000) {
-      return false;
-    }
-
-    return true;
-  } catch (err) {
-    console.error(err);
-    return false;
-  }
-}
-
-async function verifyToken() {
-  if (tokenIsValid(get(firebaseToken))) {
-    return;
-  }
-
-  const token = await createAuthToken();
-  const decodedToken = jose.decodeJwt(token);
-  firebaseToken.set(token);
-  if (typeof decodedToken.uid !== 'string') {
-    console.error(
-      'Received unexpected uid in firebase JWT token',
-      decodedToken
-    );
-    throw new Error('Connection error'); // Displayed to the user
-  }
-  uid.set(decodedToken.uid);
-}
-
-// Dedup concurrent signIn() calls so that parallel subscribers don't each hit
-// /auth and signInWithCustomToken; the in-flight promise is shared and cleared
-// once it settles, so subsequent calls re-verify the token.
-let signInPromise = null;
 export async function signIn() {
-  if (signInPromise) return signInPromise;
-  signInPromise = (async () => {
-    const auth = getAuth();
-    await verifyToken();
-    if (auth.currentUser) return;
-    await signInWithCustomToken(auth, get(firebaseToken));
-  })();
-  try {
-    return await signInPromise;
-  } finally {
-    signInPromise = null;
-  }
+  uid.set(getUid());
 }
 
-function normaliseBoard(document) {
-  const data = document.data();
-  let dataField = data.data;
-  try {
-    dataField = JSON.parse(data.data);
-  } catch {}
-  return {
-    ...data,
-    data: dataField,
-    id: document.id,
-    owner: data.owner.id === get(uid),
+function subscribeMap(boardId, pick, onChange) {
+  const s = openBoard(boardId);
+  const map = pick(s);
+  const observer = (event) => onChange(s, event);
+  map.observe(observer);
+  return () => {
+    map.unobserve(observer);
+    closeBoard(boardId);
   };
 }
 
-function normaliseRank(document) {
-  const data = document.data();
-  let dataField = data.data;
-  try {
-    dataField = JSON.parse(data.data);
-  } catch {}
-  return {
-    ...data,
-    data: dataField,
-    id: document.id,
-  };
-}
-
-function normaliseCard(document) {
-  const data = document.data();
-  let reacted = '';
-  const reactions = Object.fromEntries(
-    Object.entries(data?.reactions ?? {}).map(([reaction, reactors]) => {
-      if (reactors.find((r) => r.id === get(uid))) {
-        reacted = reaction;
-      }
-      return [reaction, reactors.length];
-    })
-  );
-  return {
-    ...data,
-    id: document.id,
-    votes: data?.votes?.length ?? 0,
-    column: data.column?.id ?? null,
-    owner: data.owner?.id === get(uid),
-    voted:
-      (data?.votes ?? []).find((voteDoc) => voteDoc.id === get(uid)) !==
-      undefined,
-    reactions,
-    reacted,
-    created_at: new Date(data?.created_at?.toMillis() ?? Date.now()),
-  };
-}
-
-// returns a function to unsubscribe from updates
 export async function subscribeToCards(
   boardId,
   newCallback,
   updateCallback,
-  deleteCallback,
-  errorCallback
+  deleteCallback
 ) {
   await signIn();
+  const s = openBoard(boardId);
+  await s.ready;
 
-  const firestore = getFirestore(getApp());
-  const boardRef = doc(firestore, 'boards', boardId);
-  const cardsCollection = collection(boardRef, 'cards');
-  return onSnapshot(
-    cardsCollection,
-    (snapshot) =>
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === 'added') {
-          newCallback(normaliseCard(change.doc));
-        }
-        if (change.type === 'modified') {
-          updateCallback(normaliseCard(change.doc));
-        }
-        if (change.type === 'removed') {
-          deleteCallback(change.doc.id);
-        }
-      }),
-    errorCallback
+  const emit = (id, action) => {
+    if (action === 'delete') return deleteCallback(id);
+    const card = normaliseCard(s, id);
+    if (!card) return deleteCallback(id);
+    (action === 'add' ? newCallback : updateCallback)(card);
+  };
+
+  // Initial snapshot
+  for (const id of s.cards.keys()) emit(id, 'add');
+
+  const unsubCards = subscribeMap(
+    boardId,
+    (s) => s.cards,
+    (_s, event) => {
+      event.changes.keys.forEach(({ action }, id) => emit(id, action));
+    }
   );
+  const relatedChange = (_s, event) => {
+    const touched = new Set();
+    event.changes.keys.forEach((_c, key) => touched.add(key.split('|')[0]));
+    touched.forEach((id) => s.cards.has(id) && emit(id, 'update'));
+  };
+  const unsubVotes = subscribeMap(boardId, (s) => s.votes, relatedChange);
+  const unsubReactions = subscribeMap(
+    boardId,
+    (s) => s.reactions,
+    relatedChange
+  );
+
+  return () => {
+    unsubCards();
+    unsubVotes();
+    unsubReactions();
+    closeBoard(boardId);
+  };
 }
 
-export async function subscribeToBoard(
-  boardId,
-  updateCallback,
-  deleteCallback,
-  errorCallback
-) {
+export async function subscribeToBoard(boardId, updateCallback) {
   await signIn();
-
-  const firestore = getFirestore(getApp());
-  const boardRef = query(
-    collection(firestore, 'boards'),
-    where('__name__', 'in', [boardId])
-  );
-  return onSnapshot(
-    boardRef,
-    (snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        const board = change.doc;
-        if (change.type === 'modified') {
-          updateCallback(normaliseBoard(board));
-        }
-        if (change.type === 'removed') {
-          deleteCallback();
-        }
-      });
-    },
-    errorCallback
+  return subscribeMap(
+    boardId,
+    (s) => s.meta,
+    (s) => updateCallback(normaliseBoard(s, boardId))
   );
 }
 
@@ -195,28 +80,18 @@ export async function subscribeToRanks(
   boardId,
   newCallback,
   updateCallback,
-  deleteCallback,
-  errorCallback
+  deleteCallback
 ) {
   await signIn();
-
-  const firestore = getFirestore(getApp());
-  const boardRef = doc(firestore, 'boards', boardId);
-  const columnsCollection = collection(boardRef, 'columns');
-  return onSnapshot(
-    columnsCollection,
-    (snapshot) =>
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === 'added') {
-          newCallback(normaliseRank(change.doc));
-        }
-        if (change.type === 'modified') {
-          updateCallback(normaliseRank(change.doc));
-        }
-        if (change.type === 'removed') {
-          deleteCallback(change.doc.id);
-        }
-      }),
-    errorCallback
+  return subscribeMap(
+    boardId,
+    (s) => s.columns,
+    (s, event) => {
+      event.changes.keys.forEach(({ action }, id) => {
+        if (action === 'delete') deleteCallback(id);
+        else if (action === 'add') newCallback(normaliseRank(s, id));
+        else updateCallback(normaliseRank(s, id));
+      });
+    }
   );
 }

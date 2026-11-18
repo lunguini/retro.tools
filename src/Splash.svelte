@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import { _ } from 'svelte-i18n';
-  import { navigate } from 'svelte-routing';
+  import { go as navigate } from './utils.js';
 
   import { getBoards } from './api.js';
   import { Icons } from './data.js';

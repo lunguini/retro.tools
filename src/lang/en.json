@@ -106,5 +106,11 @@
   "splash.features.no_logins.body": "To stay anonymous and convenient, we won't ask you to create an account or to provide any other information, simply click and go!",
   "splash.features.encryption.title": "End to End Encryption",
   "splash.features.encryption.body_1": "Board encryption is optionally available using a password.",
-  "splash.features.encryption.body_2": "All encryption is handled by the browser and our backend sees nothing but encrypted data!"
+  "splash.features.encryption.body_2": "All encryption is handled by the browser and our backend sees nothing but encrypted data!",
+  "error.vote_limit_reached": "You've used all your votes!",
+  "board.votes_remaining": "{remaining}/{max} votes left",
+  "board.votes_remaining_hint": "Votes you can still cast on this board",
+  "board.peers": "{count, plural, =0 {No peers} one {# peer} other {# peers}}",
+  "board.peers_hint": "Other participants connected directly to you",
+  "board.options.max_votes": "Votes per Person (0 = ∞)"
 }
